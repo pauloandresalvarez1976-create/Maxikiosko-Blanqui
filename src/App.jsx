@@ -410,16 +410,7 @@ function App() {
 
 
   // ── NOTIFICACIONES ADMIN ──
-  // chatReadAt: { [orderId]: timestamp } — cuándo leyó el admin cada chat por última vez
-  const [chatReadAt, setChatReadAt] = usePersist("chatReadAt", {});
   const [adminAlert, setAdminAlert] = useState(null); // { type: "pedido"|"mensaje", text, id } — alerta flotante
-  // ── CHAT STATE ──
-  // chats: { [orderId]: { messages: [{id, from, text, time}], closed: bool } }
-  const [chats, setChats] = usePersist("chats", {});
-  const [showChat, setShowChat] = useState(false);       // flotante cliente
-  const [adminChatOrderId, setAdminChatOrderId] = useState(null); // chat abierto en admin
-  const [chatInput, setChatInput] = useState("");
-  const [adminChatInput, setAdminChatInput] = useState("");
 
   const [showSocialLogin, setShowSocialLogin] = useState(false);
 
@@ -550,7 +541,6 @@ function App() {
       if (data.orders) update(setOrders, "orders", data.orders);
       if (data.products) update(setProducts, "products", data.products);
       if (data.customers) update(setCustomers, "customers", data.customers);
-      if (data.chats) update(setChats, "chats", data.chats);
       if (data.horarios) update(setHorarios, "horarios", data.horarios);
       if (data.vacaciones) update(setVacaciones, "vacaciones", data.vacaciones);
       if (data.mantenimiento !== undefined) update(setMantenimiento, "mantenimiento", data.mantenimiento);
@@ -581,7 +571,6 @@ function App() {
       if (data.orders) update(setOrders, "orders", data.orders);
       if (data.products) update(setProducts, "products", data.products);
       if (data.customers) update(setCustomers, "customers", data.customers);
-      if (data.chats) update(setChats, "chats", data.chats);
       if (data.horarios) update(setHorarios, "horarios", data.horarios);
       if (data.vacaciones) update(setVacaciones, "vacaciones", data.vacaciones);
       if (data.contactInfo) update(setContactInfo, "contactInfo", data.contactInfo);
@@ -992,24 +981,6 @@ function App() {
     } catch (e) {}
   };
 
-  // Sonido suave para mensajes de chat entrantes
-  const playChatSound = () => {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      [{ freq: 880, start: 0, dur: 0.08 }, { freq: 1100, start: 0.1, dur: 0.12 }].forEach(({ freq, start, dur }) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.type = "triangle";
-        osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0, ctx.currentTime + start);
-        gain.gain.linearRampToValueAtTime(0.22, ctx.currentTime + start + 0.01);
-        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
-        osc.start(ctx.currentTime + start);
-        osc.stop(ctx.currentTime + start + dur + 0.05);
-      });
-    } catch (e) {}
-  };
 
   // ── Detector de cambios de estado del pedido activo (para notificar al CLIENTE) ──
   const prevActiveStatusRef = useRef(null);
@@ -1329,29 +1300,7 @@ function App() {
       const statusTimestamps = { ...(o.statusTimestamps || {}), [status]: timeNow };
       return { ...o, status, statusTimestamps };
     }));
-    // Mensaje automático en el chat cuando cambia el estado
-    const statusMessages = {
-      en_proceso: "🍳 ¡Tu pedido ya está en preparación!",
-      listo: "✅ ¡Tu pedido está listo! Pronto lo vas a recibir.",
-      entregado: "✅ Pedido entregado. El chat fue cerrado. ¡Gracias por tu compra!",
-      cancelado: "❌ Tu pedido fue cancelado.",
-    };
-    if (statusMessages[status]) {
-      setChats((prev) => {
-        const existing = prev[id] || { messages: [], closed: false };
-        return {
-          ...prev,
-          [id]: {
-            ...existing,
-            closed: status === "entregado" || status === "cancelado",
-            messages: [
-              ...existing.messages,
-              { id: Date.now(), from: "sistema", text: statusMessages[status], time: timeNow },
-            ],
-          },
-        };
-      });
-    }
+
     // Sonido de notificación para cambios importantes
     if (status === "en_proceso" || status === "listo" || status === "entregado") {
       playNotification();
@@ -1421,52 +1370,8 @@ _Maxikiosko Blanqui_`,
     document.body.removeChild(a);
   };
 
-  // Enviar mensaje como cliente
-  const sendClientMessage = (orderId, text) => {
-    if (!text.trim() || !orderId) return;
-    const msg = { id: Date.now(), from: "cliente", text: text.trim(), time: new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) };
-    setChats((prev) => ({
-      ...prev,
-      [orderId]: { ...(prev[orderId] || { closed: false, messages: [] }), messages: [...(prev[orderId]?.messages || []), msg] },
-    }));
-    setChatInput("");
-    // Notificar al admin si está en modo admin
-    if (isAdmin) {
-      playChatSound();
-    } else {
-      // Si el admin no está viendo, dispara alerta visual flotante
-      const order = orders.find(o => o.id === orderId);
-      setAdminAlert({ type: "mensaje", text: `💬 Nuevo mensaje de ${order?.client?.name || "cliente"}`, id: orderId });
-      setTimeout(() => setAdminAlert(null), 5000);
-    }
-  };
 
-  // Enviar mensaje como admin
-  const sendAdminMessage = (orderId, text) => {
-    if (!text.trim() || !orderId) return;
-    const msg = { id: Date.now(), from: "admin", text: text.trim(), time: new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) };
-    setChats((prev) => ({
-      ...prev,
-      [orderId]: { ...(prev[orderId] || { closed: false, messages: [] }), messages: [...(prev[orderId]?.messages || []), msg] },
-    }));
-    setAdminChatInput("");
-    playChatSound();
-  };
 
-  // Contar mensajes no leídos del admin para un pedido (mensajes del cliente posteriores a la última lectura)
-  const unreadAdminCount = (orderId) => {
-    const chat = chats[orderId];
-    if (!chat) return 0;
-    const lastRead = chatReadAt[orderId] || 0;
-    return chat.messages.filter((m) => m.from === "cliente" && m.id > lastRead).length;
-  };
-
-  // Marcar chat como leído
-  const markChatRead = (orderId) => {
-    setChatReadAt(prev => ({ ...prev, [orderId]: Date.now() }));
-  };
-
-  const totalUnreadAdmin = orders.reduce((sum, o) => sum + unreadAdminCount(o.id), 0);
 
   const deleteOrder = (id) => {
     setOrders((prev) => prev.filter((o) => o.id !== id));
@@ -2378,7 +2283,6 @@ _Maxikiosko Blanqui_`,
                   setOrderSent(false);
                   setOrderMerged(false);
                   navigateTo("mipedido");
-                  setTimeout(() => setShowChat(true), 100);
                 }}
                 style={{ background: "#FFF3E0", color: "#E65100", border: "2px solid #E65100", width: "100%", padding: "11px 0", borderRadius: 12, fontWeight: 900, fontSize: 15, cursor: "pointer", fontFamily: "inherit", marginTop: 10, }}
               >
@@ -2536,7 +2440,7 @@ _Maxikiosko Blanqui_`,
           const TABS = [
             { key: "estadisticas", emoji: "📊", label: "Estadísticas", color: "#6A1B9A", bg: "#F3E5F5" },
             { key: "productos", emoji: "📦", label: "Productos", color: "#1A7A2E", bg: "#E8F5EC" },
-            { key: "pedidos",   emoji: newOrdersCount > 0 ? "🔔" : "📋", label: (() => { const unread = orders.reduce((s,o) => s + unreadAdminCount(o.id), 0); const parts = []; if (newOrdersCount > 0) parts.push(`${newOrdersCount} nuevo${newOrdersCount > 1 ? "s" : ""}`); if (unread > 0) parts.push(`${unread} msg`); return parts.length > 0 ? `Pedidos (${parts.join(" · ")})` : "Pedidos"; })(), color: "#E65100", bg: "#FFF3E0" },
+            { key: "pedidos", emoji: newOrdersCount > 0 ? "🔔" : "📋", label: newOrdersCount > 0 ? `Pedidos (${newOrdersCount} nuevo${newOrdersCount > 1 ? "s" : ""})` : "Pedidos", color: "#E65100", bg: "#FFF3E0" },
             { key: "clientes",  emoji: "👥", label: "Clientes",  color: "#1565C0", bg: "#E3F2FD" },
             { key: "banners",   emoji: "🖼️",  label: "Banners",   color: "#6A1B9A", bg: "#F3E5F5" },
             { key: "horarios",  emoji: "🕐", label: "Horarios",  color: "#00695C", bg: "#E0F2F1" },
@@ -2559,7 +2463,7 @@ _Maxikiosko Blanqui_`,
               <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                 {TABS.slice(0, 2).map(t => {
                   const active = adminTab === t.key;
-                  const hasPending = t.key === "pedidos" && (newOrdersCount > 0 || orders.reduce((s,o) => s + unreadAdminCount(o.id), 0) > 0);
+                  const hasPending = t.key === "pedidos" && newOrdersCount > 0;
                   return (
                     <button
                       key={t.key}
@@ -4542,24 +4446,7 @@ _Maxikiosko Blanqui_`,
                       <button
                         onClick={() => {
                           if (window.confirm(`¿Cancelar el pedido de ${order.client?.name || "este cliente"}?\n\nSe enviará un mensaje de disculpas al cliente y se devolverá el stock.`)) {
-                            updateOrderStatus(order.id, "cancelado");
-                            // Mensaje de disculpas en el chat del pedido
-                            const timeNow = new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-                            setChats(prev => ({
-                              ...prev,
-                              [order.id]: {
-                                ...prev[order.id],
-                                messages: [
-                                  ...(prev[order.id]?.messages || []),
-                                  {
-                                    from: "admin",
-                                    text: "😔 Lamentamos informarte que tu pedido fue cancelado. Nos disculpamos por los inconvenientes ocasionados. Por favor, volvé a realizar tu pedido o contactanos para más información.",
-                                    time: timeNow,
-                                  }
-                                ],
-                              }
-                            }));
-                            showToast("❌ Pedido cancelado y cliente notificado");
+                            updateOrderStatus(order.id, "cancelado");showToast("❌ Pedido cancelado y cliente notificado");
                           }
                         }}
                         style={{ padding: "4px 10px", border: "none", borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", background: order.status === "cancelado" ? "#FDECEA" : "#FFF0F0", color: "#CC1111", marginLeft: 2, }}
@@ -4608,90 +4495,6 @@ _Maxikiosko Blanqui_`,
                       style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #EEE", fontSize: 12, fontFamily: "inherit", outline: "none", background: "#FAFAFA", boxSizing: "border-box", color: "#555" }}
                     />
                   </div>
-
-                  {/* Admin Chat per order */}
-                  {(() => {
-                    const orderChat = chats[order.id] || { messages: [], closed: false };
-                    const isOpen = adminChatOrderId === order.id;
-                    const msgCount = orderChat.messages?.filter(m => m.from === "cliente").length || 0;
-                    return (
-                      <>
-                        <div style={{ padding: "6px 14px 10px", borderTop: "1px solid #F5F5F5" }}>
-                          <button
-                            onClick={() => { setAdminChatOrderId(isOpen ? null : order.id); if (!isOpen) markChatRead(order.id); }}
-                            style={{
-                              background: orderChat.closed ? "#F5F5F5" : "#FFF3E0",
-                              color: orderChat.closed ? "#999" : "#E65100",
-                              border: `1.5px solid ${orderChat.closed ? "#DDD" : "#E65100"}`,
-                              borderRadius: 8,
-                              padding: "5px 14px",
-                              fontWeight: 800,
-                              fontSize: 12,
-                              cursor: "pointer",
-                              fontFamily: "inherit",
-                              position: "relative",
-                            }}
-                          >
-                            {isOpen ? "✕ Cerrar chat" : (orderChat.closed ? "🔒 Chat cerrado" : `💬 Chat con cliente${msgCount > 0 ? ` (${msgCount})` : ""}`)}
-                          </button>
-                        </div>
-                        {isOpen && (
-                          <div style={{ borderTop: "1px solid #F0E8E0", background: "#FFF8F5" }}>
-                            {/* Admin chat header */}
-                            <div style={{ padding: "8px 14px", background: "#E65100", display: "flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontSize: 16 }}>💬</span>
-                              <div style={{ color: "#fff", fontWeight: 800, fontSize: 13 }}>
-                                Chat — {order.client.name}
-                                {orderChat.closed && <span style={{ marginLeft: 8, background: "rgba(255,255,255,0.25)", borderRadius: 10, padding: "1px 8px", fontSize: 11 }}>CERRADO</span>}
-                              </div>
-                            </div>
-                            {/* Admin messages */}
-                            <div style={{ padding: "10px 12px", minHeight: 80, maxHeight: 220, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
-                              {orderChat.messages.length === 0 && (
-                                <div style={{ textAlign: "center", color: "#BBB", fontSize: 12, padding: "16px 0" }}>Sin mensajes aún</div>
-                              )}
-                              {orderChat.messages.map((msg) => (
-                                <div key={msg.id} style={{ display: "flex", justifyContent: msg.from === "admin" ? "flex-end" : (msg.from === "sistema" ? "center" : "flex-start") }}>
-                                  {msg.from === "sistema" ? (
-                                    <div style={{ background: "#E8F5EC", color: "#1A7A2E", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 20, maxWidth: "90%", textAlign: "center" }}>
-                                      {msg.text}
-                                    </div>
-                                  ) : (
-                                    <div style={{ background: msg.from === "admin" ? "#E65100" : "#fff", color: msg.from === "admin" ? "#fff" : "#1A2E1A", padding: "6px 10px", borderRadius: msg.from === "admin" ? "12px 12px 4px 12px" : "12px 12px 12px 4px", maxWidth: "80%", boxShadow: "0 1px 3px rgba(0,0,0,0.09)", fontSize: 12, }}>
-                                      <div style={{ fontWeight: 700, fontSize: 10, opacity: 0.7, marginBottom: 2 }}>
-                                        {msg.from === "admin" ? "Vos (Admin)" : `👤 ${order.client.name}`}
-                                      </div>
-                                      <div style={{ lineHeight: 1.4 }}>{msg.text}</div>
-                                      <div style={{ fontSize: 10, opacity: 0.6, textAlign: "right", marginTop: 2 }}>{msg.time}</div>
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                            {/* Admin input */}
-                            {!orderChat.closed && (
-                              <div style={{ padding: "8px 12px", borderTop: "1px solid #F0E8E0", display: "flex", gap: 6 }}>
-                                <input
-                                  value={adminChatInput}
-                                  onChange={e => setAdminChatInput(e.target.value)}
-                                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAdminMessage(order.id, adminChatInput); }}}
-                                  placeholder="Responder al cliente..."
-                                  style={{ flex: 1, border: "1.5px solid #E65100", borderRadius: 8, padding: "6px 10px", fontSize: 12, fontFamily: "inherit", outline: "none" }}
-                                />
-                                <button
-                                  onClick={() => sendAdminMessage(order.id, adminChatInput)}
-                                  disabled={!adminChatInput.trim()}
-                                  style={{ background: "#E65100", color: "#fff", border: "none", borderRadius: 8, padding: "6px 12px", fontWeight: 900, cursor: adminChatInput.trim() ? "pointer" : "not-allowed", opacity: adminChatInput.trim() ? 1 : 0.5, fontFamily: "inherit", fontSize: 15 }}
-                                >
-                                  ➤
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
                 </div>
               ))
             )}
@@ -6088,7 +5891,6 @@ _Maxikiosko Blanqui_`,
                 { key: "products", label: "Productos", emoji: "📦" },
                 { key: "orders", label: "Pedidos", emoji: "📋" },
                 { key: "customers", label: "Clientes", emoji: "👥" },
-                { key: "chats", label: "Chats", emoji: "💬" },
                 { key: "horarios", label: "Horarios", emoji: "🕐" },
                 { key: "banners", label: "Banners", emoji: "🖼️" },
               ].map(({ key, label, emoji }) => {
@@ -6115,7 +5917,7 @@ _Maxikiosko Blanqui_`,
                   try {
                     showToast("⏳ Generando backup completo...");
                     // Recolectar todo desde localStorage + estado actual
-                    const ALL_KEYS = ["products","orders","customers","chats","horarios","banners","vacaciones","mantenimiento","contactBanner","contactInfo","adBanner","loyaltyEnabled","loyaltyMode","freeShippingEnabled","freeShippingThreshold","deliveryETA","whatsappConfig","activeOrderId","appVersion","transferenciaConfig","efectivoEnabled","lowStockThreshold","cashbackConfig","mensajeDelDia"];
+                    const ALL_KEYS = ["products","orders","customers","horarios","banners","vacaciones","mantenimiento","contactBanner","contactInfo","adBanner","loyaltyEnabled","loyaltyMode","freeShippingEnabled","freeShippingThreshold","deliveryETA","whatsappConfig","activeOrderId","appVersion","transferenciaConfig","efectivoEnabled","lowStockThreshold","cashbackConfig","mensajeDelDia"];
                     const backup = { _version: 2, _date: new Date().toISOString(), _app: "maxikiosko" };
                     ALL_KEYS.forEach(k => {
                       const v = localStorage.getItem("mk_" + k);
@@ -6125,7 +5927,6 @@ _Maxikiosko Blanqui_`,
                     backup.products = products;
                     backup.customers = customers;
                     backup.orders = orders;
-                    backup.chats = chats;
                     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
@@ -6165,7 +5966,6 @@ _Maxikiosko Blanqui_`,
                       if (data.products) { saveToFirestore("products", data.products); setProducts(data.products); }
                       if (data.customers) { saveToFirestore("customers", data.customers); setCustomers(data.customers); }
                       if (data.orders) { saveToFirestore("orders", data.orders); setOrders(data.orders); }
-                      if (data.chats) { saveToFirestore("chats", data.chats); setChats(data.chats); }
                       showToast("✅ Backup restaurado con éxito — fotos y todo incluido");
                       setTimeout(() => window.location.reload(), 1200);
                     } catch(err) {
@@ -6233,22 +6033,19 @@ _Maxikiosko Blanqui_`,
               </div>
               <button
                 onClick={() => {
-                  if (window.confirm("¿Seguro que querés borrar TODOS los pedidos y chats? Esta acción no se puede deshacer.")) {
+                  if (window.confirm("¿Seguro que querés borrar TODOS los pedidos? Esta acción no se puede deshacer.")) {
                     try {
                       // Borrar de localStorage
                       localStorage.removeItem("mk_orders");
-                      localStorage.removeItem("mk_chats");
                       localStorage.removeItem("mk_activeOrderId");
                       // Borrar de Firebase Firestore
                       const resetTimestamp = Date.now();
                       saveToFirestore("orders", []);
-                      saveToFirestore("chats", {});
                       saveToFirestore("ordersResetAt", resetTimestamp);
                       // Actualizar estado local para no esperar reload
                       setOrders([]);
-                      setChats({});
                       setOrdersResetAt(resetTimestamp);
-                      showToast("🗑️ Pedidos y chats eliminados");
+                      showToast("🗑️ Pedidos eliminados");
                     } catch(e) {
                       showToast("❌ Error al borrar: " + e.message);
                     }
@@ -6256,18 +6053,17 @@ _Maxikiosko Blanqui_`,
                 }}
                 style={{ background: "#E65100", color: "#fff", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginRight: 10, marginBottom: 8 }}
               >
-                🗑️ Borrar pedidos y chats
+                🗑️ Borrar pedidos
               </button>
               <button
                 onClick={() => {
                   if (window.confirm("¿Seguro que querés RESETEAR TODO el kiosko a los valores de fábrica? Se perderán todos los datos.")) {
                     try {
-                      const ALL_KEYS = ["products","orders","customers","chats","horarios","banners","vacaciones","mantenimiento","contactBanner","contactInfo","adBanner","loyaltyEnabled","loyaltyMode","freeShippingEnabled","freeShippingThreshold","deliveryETA","whatsappConfig","activeOrderId","appVersion","transferenciaConfig","efectivoEnabled","lowStockThreshold","cashbackConfig","mensajeDelDia"];
+                      const ALL_KEYS = ["products","orders","customers","horarios","banners","vacaciones","mantenimiento","contactBanner","contactInfo","adBanner","loyaltyEnabled","loyaltyMode","freeShippingEnabled","freeShippingThreshold","deliveryETA","whatsappConfig","activeOrderId","appVersion","transferenciaConfig","efectivoEnabled","lowStockThreshold","cashbackConfig","mensajeDelDia"];
                       // Borrar localStorage
                       ALL_KEYS.forEach(k => localStorage.removeItem("mk_" + k));
                       // Borrar Firebase Firestore
                       saveToFirestore("orders", []);
-                      saveToFirestore("chats", {});
                       saveToFirestore("products", []);
                       saveToFirestore("customers", {});
                       showToast("🔥 Reset completo realizado");
@@ -6999,102 +6795,6 @@ _Maxikiosko Blanqui_`,
                   🔄 Pedir de nuevo
                 </button>
               )}
-
-              {/* CHAT BUTTON */}
-              {(() => {
-                const orderChat = chats[activeOrderId];
-                const isChatClosed = orderChat?.closed;
-                const hasUnread = !isAdmin && orderChat?.messages?.some(m => m.from === "admin");
-                return (
-                  <button
-                    onClick={() => setShowChat(!showChat)}
-                    style={{
-                      width: "100%",
-                      padding: "13px 0",
-                      background: isChatClosed ? "#F5F5F5" : "#FFF3E0",
-                      color: isChatClosed ? "#999" : "#E65100",
-                      border: `2px solid ${isChatClosed ? "#DDD" : "#E65100"}`,
-                      borderRadius: 12,
-                      fontWeight: 900,
-                      fontSize: 15,
-                      cursor: isChatClosed ? "default" : "pointer",
-                      fontFamily: "inherit",
-                      marginBottom: 10,
-                      position: "relative",
-                    }}
-                    disabled={isChatClosed}
-                  >
-                    {isChatClosed ? "🔒 Chat cerrado (pedido entregado)" : (showChat ? "✕ Cerrar chat" : "💬 Chatear con el local")}
-                    {hasUnread && !showChat && (
-                      <span style={{ position: "absolute", top: -6, right: -6, background: "#CC1111", color: "#fff", borderRadius: "50%", width: 18, height: 18, fontSize: 11, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center" }}>!</span>
-                    )}
-                  </button>
-                );
-              })()}
-
-              {/* CHAT PANEL */}
-              {showChat && activeOrderId && (() => {
-                const orderChat = chats[activeOrderId] || { messages: [], closed: false };
-                return (
-                  <div style={{ background: "#fff", borderRadius: 14, boxShadow: "0 4px 20px rgba(0,0,0,0.12)", marginBottom: 16, overflow: "hidden" }}>
-                    {/* Chat header */}
-                    <div style={{ background: "#E65100", padding: "12px 16px", display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 20 }}>💬</span>
-                      <div>
-                        <div style={{ color: "#fff", fontWeight: 900, fontSize: 14 }}>Chat con Maxikiosko Blanqui</div>
-                        <div style={{ color: "rgba(255,255,255,0.8)", fontSize: 11 }}>
-                          {orderChat.closed ? "Chat cerrado" : "Respondemos a la brevedad"}
-                        </div>
-                      </div>
-                    </div>
-                    {/* Messages */}
-                    <div style={{ padding: "12px 14px", minHeight: 120, maxHeight: 260, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, background: "#FFF8F5" }}>
-                      {orderChat.messages.length === 0 && (
-                        <div style={{ textAlign: "center", color: "#BBB", fontSize: 13, marginTop: 30 }}>
-                          <div style={{ fontSize: 30, marginBottom: 6 }}>💬</div>
-                          <div>¿Tenés alguna consulta sobre tu pedido?</div>
-                        </div>
-                      )}
-                      {orderChat.messages.map((msg) => (
-                        <div key={msg.id} style={{ display: "flex", justifyContent: msg.from === "cliente" ? "flex-end" : (msg.from === "sistema" ? "center" : "flex-start"), }}>
-                          {msg.from === "sistema" ? (
-                            <div style={{ background: "#E8F5EC", color: "#1A7A2E", fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 20, maxWidth: "90%", textAlign: "center" }}>
-                              {msg.text}
-                            </div>
-                          ) : (
-                            <div style={{ background: msg.from === "cliente" ? "#E65100" : "#fff", color: msg.from === "cliente" ? "#fff" : "#1A2E1A", padding: "8px 12px", borderRadius: msg.from === "cliente" ? "14px 14px 4px 14px" : "14px 14px 14px 4px", maxWidth: "80%", boxShadow: "0 1px 4px rgba(0,0,0,0.1)", }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 2, opacity: 0.75 }}>
-                                {msg.from === "cliente" ? "Vos" : "🏪 Local"}
-                              </div>
-                              <div style={{ fontSize: 13, lineHeight: 1.4 }}>{msg.text}</div>
-                              <div style={{ fontSize: 10, opacity: 0.65, marginTop: 3, textAlign: "right" }}>{msg.time}</div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    {/* Input */}
-                    {!orderChat.closed && (
-                      <div style={{ padding: "10px 12px", borderTop: "1px solid #F0E8E0", display: "flex", gap: 8 }}>
-                        <input
-                          value={chatInput}
-                          onChange={e => setChatInput(e.target.value)}
-                          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendClientMessage(activeOrderId, chatInput); }}}
-                          placeholder="Escribí tu mensaje..."
-                          style={{ flex: 1, border: "1.5px solid #E65100", borderRadius: 10, padding: "8px 12px", fontSize: 13, fontFamily: "inherit", outline: "none" }}
-                        />
-                        <button
-                          onClick={() => sendClientMessage(activeOrderId, chatInput)}
-                          disabled={!chatInput.trim()}
-                          style={{ background: "#E65100", color: "#fff", border: "none", borderRadius: 10, padding: "8px 14px", fontWeight: 900, cursor: chatInput.trim() ? "pointer" : "not-allowed", opacity: chatInput.trim() ? 1 : 0.5, fontFamily: "inherit", fontSize: 16 }}
-                        >
-                          ➤
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
               <button
                 onClick={() => {
                   if (activeOrder && activeOrder.items && activeOrder.items.length > 0) {
