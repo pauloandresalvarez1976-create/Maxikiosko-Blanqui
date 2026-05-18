@@ -4393,6 +4393,7 @@ _Maxikiosko Blanqui_`,
                                order.status === "listo" ? "0 4px 16px rgba(33,150,243,0.15)" :
                                order.status === "entregado" ? "0 4px 16px rgba(0,166,80,0.13)" :
                                "0 4px 16px rgba(204,17,17,0.10)",
+                    animation: order.status === "nuevo" ? "nuevoPulse 1.4s ease-in-out infinite" : "none",
                     background: order.status === "nuevo" ? "linear-gradient(135deg,#FFEBEE 0%,#FFF9F9 100%)" :
                                 order.status === "en_proceso" ? "linear-gradient(135deg,#FFF3E0 0%,#FFFAF5 100%)" :
                                 order.status === "listo" ? "linear-gradient(135deg,#E3F2FD 0%,#F5FAFF 100%)" :
