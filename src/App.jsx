@@ -206,8 +206,6 @@ function App() {
   const [editingOrder, setEditingOrder] = useState(null); // pedido que se está editando
   const [showBlockedList, setShowBlockedList] = useState(false);
   const [adminTab, setAdminTab] = useState("productos"); // productos | pedidos | banners | envios | horarios
-  const [versionDraft, setVersionDraft] = useState(null); // borrador local para edición de versión
-  const [versionSaved, setVersionSaved] = useState(false); // feedback visual al guardar
   const [historialExpanded, setHistorialExpanded] = useState(null); // id del pedido expandido en el historial
   const [freeShippingEnabled, setFreeShippingEnabled] = usePersist("freeShippingEnabled", false);
   const [freeShippingThreshold, setFreeShippingThreshold] = usePersist("freeShippingThreshold", 20000);
@@ -261,7 +259,6 @@ function App() {
   const [vacaciones, setVacaciones] = usePersist("vacaciones", { activo: false, desde: "", hasta: "", mensaje: "Estamos de vacaciones. ¡Volvemos pronto!" });
   const [mantenimiento, setMantenimiento] = usePersist("mantenimiento", false);
   const [horariosPrevios, setHorariosPrevios] = useState(null);
-  const [appVersion, setAppVersion] = usePersist("appVersion", { numero: "1.0", novedades: "• Tienda online\n• Pedidos en tiempo real\n• Panel de administración\n• Sistema de fidelización" });
   const [banners, setBanners] = usePersist("banners", [
     {
       title: "¡Bienvenido!",
@@ -520,7 +517,7 @@ function App() {
     const CONFIG_KEYS = ["horarios", "vacaciones", "mantenimiento", "efectivoEnabled", "transferenciaConfig",
       "whatsappConfig", "contactInfo", "contactBanner", "mensajeDelDia", "freeShippingEnabled",
       "freeShippingThreshold", "loyaltyEnabled", "loyaltyMode", "deliveryETA", "banners",
-      "lowStockThreshold", "cashbackConfig", "adBanner", "appVersion"];
+      "lowStockThreshold", "cashbackConfig", "adBanner"];
     CONFIG_KEYS.forEach(k => localStorage.removeItem("mk_" + k));
     const update = (setter, key, newVal) => {
       if (!newVal) return;
@@ -576,7 +573,6 @@ function App() {
       if (data.loyaltyEnabled !== undefined) update(setLoyaltyEnabled, "loyaltyEnabled", data.loyaltyEnabled);
       if (data.loyaltyMode) update(setLoyaltyMode, "loyaltyMode", data.loyaltyMode);
       if (data.cashbackConfig) update(setCashbackConfig, "cashbackConfig", data.cashbackConfig);
-      if (data.appVersion) update(setAppVersion, "appVersion", data.appVersion);
       if (data.deliveryETA) update(setDeliveryETA, "deliveryETA", data.deliveryETA);
     });
 
@@ -594,7 +590,6 @@ function App() {
       if (data.cashbackConfig) update(setCashbackConfig, "cashbackConfig", data.cashbackConfig);
       if (data.loyaltyEnabled !== undefined) update(setLoyaltyEnabled, "loyaltyEnabled", data.loyaltyEnabled);
       if (data.loyaltyMode) update(setLoyaltyMode, "loyaltyMode", data.loyaltyMode);
-      if (data.appVersion) update(setAppVersion, "appVersion", data.appVersion);
       if (data.mantenimiento !== undefined) {
         setMantenimiento(data.mantenimiento);
         localStorage.setItem("mk_mantenimiento", JSON.stringify(data.mantenimiento));
@@ -2547,7 +2542,6 @@ _Maxikiosko Blanqui_`,
             { key: "horarios",  emoji: "🕐", label: "Horarios",  color: "#00695C", bg: "#E0F2F1" },
             { key: "ajustes",   emoji: "⚙️", label: "Ajustes",   color: "#555",    bg: "#F5F5F5" },
             { key: "contacto",  emoji: "📍", label: "Contacto",  color: "#C62828", bg: "#FFEBEE" },
-            { key: "version",   emoji: "📋", label: "Versión",   color: "#0277BD", bg: "#E1F5FE" },
           ];
           return (
             <div style={{ margin: "14px 14px 0", display: "flex", flexDirection: "column", gap: 0 }}>
@@ -2558,7 +2552,7 @@ _Maxikiosko Blanqui_`,
                   return (
                     <button
                       key={t.key}
-                      onClick={() => { setAdminTab(t.key); setVersionDraft(null); }}
+                      onClick={() => setAdminTab(t.key)}
                       style={{
                         flex: 1,
                         display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
@@ -2588,7 +2582,7 @@ _Maxikiosko Blanqui_`,
                   return (
                     <button
                       key={t.key}
-                      onClick={() => { setAdminTab(t.key); setVersionDraft(null); }}
+                      onClick={() => setAdminTab(t.key)}
                       style={{
                         flex: 1,
                         display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
@@ -3747,48 +3741,7 @@ _Maxikiosko Blanqui_`,
           );
         })()}
 
-        {adminTab === "version" && (
-          <div style={{ padding: "16px 14px 40px" }}>
-            <div style={{ fontWeight: 900, fontSize: 17, color: "#222", marginBottom: 18 }}>📋 Versión de la app</div>
-            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
-              <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 12 }}>🏷️ Número de versión</div>
-              <input
-                type="text"
-                value={versionDraft?.numero ?? appVersion.numero}
-                onChange={e => setVersionDraft(v => ({ ...(v ?? appVersion), numero: e.target.value }))}
-                placeholder="Ej: 1.0"
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #DDD", fontSize: 16, fontWeight: 900, fontFamily: "inherit", outline: "none", boxSizing: "border-box", textAlign: "center", letterSpacing: 2 }}
-              />
-            </div>
-            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
-              <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 12 }}>📝 Novedades de esta versión</div>
-              <div style={{ fontSize: 11, color: "#888", marginBottom: 10 }}>Usá • al inicio de cada línea para hacer una lista</div>
-              <textarea
-                value={versionDraft?.novedades ?? appVersion.novedades}
-                onChange={e => setVersionDraft(v => ({ ...(v ?? appVersion), novedades: e.target.value }))}
-                placeholder={"• Primera mejora\n• Segunda mejora\n• Tercera mejora"}
-                rows={8}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #DDD", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", resize: "vertical", lineHeight: 1.7 }}
-              />
-            </div>
-            <button
-              onClick={() => {
-                const draft = versionDraft ?? appVersion;
-                setAppVersion(draft);
-                saveToFirestore("appVersion", draft);
-                setVersionDraft(null);
-                setVersionSaved(true);
-                setTimeout(() => setVersionSaved(false), 2500);
-              }}
-              style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: versionSaved ? "#1A7A2E" : versionDraft ? "#0277BD" : "#CCC", color: "#fff", fontWeight: 900, fontSize: 15, fontFamily: "inherit", cursor: versionDraft ? "pointer" : "default", marginBottom: 14, transition: "background 0.25s" }}
-            >
-              {versionSaved ? "✅ ¡Guardado!" : versionDraft ? "💾 Guardar cambios" : "Sin cambios"}
-            </button>
-            <div style={{ background: "#E8F5EC", borderRadius: 12, padding: "12px 14px", fontSize: 12, color: "#1A7A2E", fontWeight: 600 }}>
-              💡 Estas novedades se muestran al pie de la tienda para que los clientes vean qué hay de nuevo.
-            </div>
-          </div>
-        )}
+
 
         {adminTab === "banners" && (
           <div style={{ padding: "14px 14px 32px" }}>
@@ -8579,12 +8532,6 @@ _Maxikiosko Blanqui_`,
         <div style={{ textAlign: "center", padding: "24px 20px 100px" }}>
           <div style={{ display: "inline-block", background: "#F0F4F0", borderRadius: 16, padding: "14px 22px", maxWidth: 300 }}>
             <div style={{ fontWeight: 900, fontSize: 13, color: "#3A5A3A", marginBottom: 2 }}>{contactBanner.name}</div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#7A9A7A", marginBottom: 8 }}>versión {appVersion.numero}</div>
-            {appVersion.novedades && (
-              <div style={{ fontSize: 11, color: "#555", whiteSpace: "pre-line", lineHeight: 1.7, textAlign: "left" }}>
-                {appVersion.novedades}
-              </div>
-            )}
           </div>
         </div>
       )}
