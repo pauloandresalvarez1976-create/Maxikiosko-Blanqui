@@ -206,6 +206,8 @@ function App() {
   const [editingOrder, setEditingOrder] = useState(null); // pedido que se está editando
   const [showBlockedList, setShowBlockedList] = useState(false);
   const [adminTab, setAdminTab] = useState("productos"); // productos | pedidos | banners | envios | horarios
+  const [versionDraft, setVersionDraft] = useState(null); // borrador local para edición de versión
+  const [versionSaved, setVersionSaved] = useState(false); // feedback visual al guardar
   const [historialExpanded, setHistorialExpanded] = useState(null); // id del pedido expandido en el historial
   const [freeShippingEnabled, setFreeShippingEnabled] = usePersist("freeShippingEnabled", false);
   const [freeShippingThreshold, setFreeShippingThreshold] = usePersist("freeShippingThreshold", 20000);
@@ -2463,14 +2465,7 @@ _Maxikiosko Blanqui_`,
             </button>
             )}
           </div>
-          {/* Botón modo oscuro — esquina superior derecha del header */}
-          <button
-            onClick={() => setDarkMode(dm => !dm)}
-            title={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
-            style={{ position: "absolute", top: 8, right: 10, background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 20, width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 16, cursor: "pointer", fontFamily: "inherit", zIndex: 10, }}
-          >
-            {darkMode ? "☀️" : "🌙"}
-          </button>
+
         </div>
 
         {/* Stats bar */}
@@ -2563,7 +2558,7 @@ _Maxikiosko Blanqui_`,
                   return (
                     <button
                       key={t.key}
-                      onClick={() => setAdminTab(t.key)}
+                      onClick={() => { setAdminTab(t.key); setVersionDraft(null); }}
                       style={{
                         flex: 1,
                         display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
@@ -2593,7 +2588,7 @@ _Maxikiosko Blanqui_`,
                   return (
                     <button
                       key={t.key}
-                      onClick={() => setAdminTab(t.key)}
+                      onClick={() => { setAdminTab(t.key); setVersionDraft(null); }}
                       style={{
                         flex: 1,
                         display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
@@ -3752,35 +3747,55 @@ _Maxikiosko Blanqui_`,
           );
         })()}
 
-        {adminTab === "version" && (
-          <div style={{ padding: "16px 14px 40px" }}>
-            <div style={{ fontWeight: 900, fontSize: 17, color: "#222", marginBottom: 18 }}>📋 Versión de la app</div>
-            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
-              <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 12 }}>🏷️ Número de versión</div>
-              <input
-                type="text"
-                value={appVersion.numero}
-                onChange={e => setAppVersion(v => ({ ...v, numero: e.target.value }))}
-                placeholder="Ej: 1.0"
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #DDD", fontSize: 16, fontWeight: 900, fontFamily: "inherit", outline: "none", boxSizing: "border-box", textAlign: "center", letterSpacing: 2 }}
-              />
+        {adminTab === "version" && (() => {
+          // Usar borrador local para evitar que Firebase pise los cambios mientras se edita
+          const draft = versionDraft ?? appVersion;
+          const setDraft = (updater) => setVersionDraft(v => updater(v ?? appVersion));
+          const handleSave = () => {
+            setAppVersion(draft);
+            saveToFirestore("appVersion", draft);
+            setVersionDraft(null);
+            setVersionSaved(true);
+            setTimeout(() => setVersionSaved(false), 2500);
+          };
+          const isDirty = JSON.stringify(draft) !== JSON.stringify(appVersion);
+          return (
+            <div style={{ padding: "16px 14px 40px" }}>
+              <div style={{ fontWeight: 900, fontSize: 17, color: "#222", marginBottom: 18 }}>📋 Versión de la app</div>
+              <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
+                <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 12 }}>🏷️ Número de versión</div>
+                <input
+                  type="text"
+                  value={draft.numero}
+                  onChange={e => setDraft(v => ({ ...v, numero: e.target.value }))}
+                  placeholder="Ej: 1.0"
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #DDD", fontSize: 16, fontWeight: 900, fontFamily: "inherit", outline: "none", boxSizing: "border-box", textAlign: "center", letterSpacing: 2 }}
+                />
+              </div>
+              <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
+                <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 12 }}>📝 Novedades de esta versión</div>
+                <div style={{ fontSize: 11, color: "#888", marginBottom: 10 }}>Usá • al inicio de cada línea para hacer una lista</div>
+                <textarea
+                  value={draft.novedades}
+                  onChange={e => setDraft(v => ({ ...v, novedades: e.target.value }))}
+                  placeholder={"• Primera mejora\n• Segunda mejora\n• Tercera mejora"}
+                  rows={8}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #DDD", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", resize: "vertical", lineHeight: 1.7 }}
+                />
+              </div>
+              <button
+                onClick={handleSave}
+                disabled={!isDirty && !versionSaved}
+                style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: versionSaved ? "#1A7A2E" : isDirty ? "#0277BD" : "#CCC", color: "#fff", fontWeight: 900, fontSize: 15, fontFamily: "inherit", cursor: isDirty ? "pointer" : "default", marginBottom: 14, transition: "background 0.25s" }}
+              >
+                {versionSaved ? "✅ ¡Guardado!" : isDirty ? "💾 Guardar cambios" : "Sin cambios"}
+              </button>
+              <div style={{ background: "#E8F5EC", borderRadius: 12, padding: "12px 14px", fontSize: 12, color: "#1A7A2E", fontWeight: 600 }}>
+                💡 Estas novedades se muestran al pie de la tienda para que los clientes vean qué hay de nuevo.
+              </div>
             </div>
-            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
-              <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 12 }}>📝 Novedades de esta versión</div>
-              <div style={{ fontSize: 11, color: "#888", marginBottom: 10 }}>Usá • al inicio de cada línea para hacer una lista</div>
-              <textarea
-                value={appVersion.novedades}
-                onChange={e => setAppVersion(v => ({ ...v, novedades: e.target.value }))}
-                placeholder={"• Primera mejora\n• Segunda mejora\n• Tercera mejora"}
-                rows={8}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #DDD", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", resize: "vertical", lineHeight: 1.7 }}
-              />
-            </div>
-            <div style={{ background: "#E8F5EC", borderRadius: 12, padding: "12px 14px", fontSize: 12, color: "#1A7A2E", fontWeight: 600 }}>
-              💡 Estas novedades se muestran al pie de la tienda para que los clientes vean qué hay de nuevo.
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {adminTab === "banners" && (
           <div style={{ padding: "14px 14px 32px" }}>
@@ -8051,9 +8066,9 @@ _Maxikiosko Blanqui_`,
       {!search && adBanner.active && (
         <div style={{
           position: "relative",
-          overflow: "hidden",
           borderTop: `3px solid ${adBanner.borderColor}`,
           borderBottom: `3px solid ${adBanner.borderColor}`,
+          overflow: adBanner.animated && adBanner.animStyle === "marquee" ? "hidden" : "visible",
         }}>
           {/* Imagen / GIF / Flyer */}
           {(adBanner.type === "image" || adBanner.type === "gif" || adBanner.type === "flyer") && adBanner.imageUrl ? (
@@ -8061,36 +8076,66 @@ _Maxikiosko Blanqui_`,
               <img
                 src={adBanner.imageUrl}
                 alt="Publicidad"
-                style={{ width: "100%", maxHeight: adBanner.type === "flyer" ? 340 : 220, objectFit: adBanner.type === "flyer" ? "contain" : "cover", display: "block", background: adBanner.bgColor, }}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  maxHeight: adBanner.type === "flyer" ? "none" : "clamp(120px, 40vw, 260px)",
+                  objectFit: adBanner.type === "flyer" ? "contain" : "cover",
+                  display: "block",
+                  background: adBanner.bgColor,
+                }}
               />
               {(adBanner.text || adBanner.subtext) && (
-                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.58)", padding: "8px 14px", color: "#fff", fontWeight: 900, fontSize: 15, textAlign: "center", }}>
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.58)", padding: "8px 14px", color: "#fff", fontWeight: 900, fontSize: "clamp(12px, 3.5vw, 16px)", textAlign: "center", }}>
                   {adBanner.emoji && <span style={{ marginRight: 6 }}>{adBanner.emoji}</span>}
                   {adBanner.text}
-                  {adBanner.subtext && <div style={{ fontWeight: 600, fontSize: 12, opacity: 0.9, marginTop: 2 }}>{adBanner.subtext}</div>}
+                  {adBanner.subtext && <div style={{ fontWeight: 600, fontSize: "clamp(10px, 2.8vw, 13px)", opacity: 0.9, marginTop: 2 }}>{adBanner.subtext}</div>}
                 </div>
               )}
             </div>
           ) : adBanner.type === "html" && adBanner.imageUrl ? (
             <div
-              style={{ width: "100%", background: adBanner.bgColor, padding: "12px 16px" }}
+              style={{ width: "100%", background: adBanner.bgColor, padding: "12px 16px", boxSizing: "border-box", overflowX: "hidden" }}
               dangerouslySetInnerHTML={{ __html: adBanner.imageUrl }}
             />
           ) : (
             /* Modo texto / texto animado */
-            <div style={{ background: adBanner.bgColor, padding: "14px 18px", minHeight: 64, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", overflow: "hidden", }}>
+            <div style={{ background: adBanner.bgColor, padding: "clamp(10px,3vw,16px) clamp(12px,4vw,20px)", minHeight: 56, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", overflow: "hidden", }}>
               <style>{`
-                @keyframes adMarquee { 0%{transform:translateX(100%)} 100%{transform:translateX(-100%)} }
+                @keyframes adMarquee {
+                  0%   { transform: translateX(100vw); }
+                  100% { transform: translateX(-100%); }
+                }
                 @keyframes adPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.7;transform:scale(1.05)} }
                 @keyframes adBounce { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} 60%{transform:translateY(-4px)} }
                 @keyframes adFade { 0%,100%{opacity:1} 50%{opacity:0.3} }
               `}</style>
-              <div style={{ color: adBanner.textColor, fontWeight: 900, fontSize: adBanner.fontSize, textAlign: "center", letterSpacing: 0.5, lineHeight: 1.3, animation: adBanner.animated ? adBanner.animStyle === "marquee" ? "adMarquee 10s linear infinite" : adBanner.animStyle === "pulse" ? "adPulse 2s ease-in-out infinite" : adBanner.animStyle === "bounce" ? "adBounce 1.4s ease infinite" : "adFade 2.5s ease-in-out infinite" : "none", whiteSpace: adBanner.animStyle === "marquee" ? "nowrap" : "normal", width: adBanner.animStyle === "marquee" ? "max-content" : "100%", }}>
+              <div style={{
+                color: adBanner.textColor,
+                fontWeight: 900,
+                fontSize: `clamp(${Math.max(11, adBanner.fontSize - 6)}px, ${(adBanner.fontSize / 16 * 4).toFixed(1)}vw, ${adBanner.fontSize}px)`,
+                textAlign: "center",
+                letterSpacing: 0.5,
+                lineHeight: 1.3,
+                animation: adBanner.animated
+                  ? adBanner.animStyle === "marquee"
+                    ? "adMarquee 12s linear infinite"
+                    : adBanner.animStyle === "pulse"
+                      ? "adPulse 2s ease-in-out infinite"
+                      : adBanner.animStyle === "bounce"
+                        ? "adBounce 1.4s ease infinite"
+                        : "adFade 2.5s ease-in-out infinite"
+                  : "none",
+                whiteSpace: adBanner.animStyle === "marquee" ? "nowrap" : "normal",
+                width: adBanner.animated && adBanner.animStyle === "marquee" ? "max-content" : "100%",
+                maxWidth: adBanner.animated && adBanner.animStyle === "marquee" ? "none" : "100%",
+                wordBreak: "break-word",
+              }}>
                 {adBanner.emoji && <span style={{ marginRight: 8 }}>{adBanner.emoji}</span>}
                 {adBanner.text || ""}
               </div>
               {adBanner.subtext && adBanner.animStyle !== "marquee" && (
-                <div style={{ color: adBanner.textColor, fontSize: 13, opacity: 0.85, marginTop: 4, textAlign: "center", width: "100%" }}>
+                <div style={{ color: adBanner.textColor, fontSize: "clamp(11px, 3vw, 14px)", opacity: 0.85, marginTop: 4, textAlign: "center", width: "100%", wordBreak: "break-word" }}>
                   {adBanner.subtext}
                 </div>
               )}
