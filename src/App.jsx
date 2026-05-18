@@ -1053,6 +1053,32 @@ function App() {
   const cartShippingFinal = cartTotalWithDiscount >= 5000 ? 0 : 500;
   const cartFinalWithDiscount = cartTotalWithDiscount + cartShippingFinal;
 
+  // Pago con MercadoPago
+  const handlePagarMP = async () => {
+    if (!clientName.trim()) { showToast("⚠️ Ingresá tu nombre para continuar"); return; }
+    showToast("⏳ Conectando con MercadoPago...");
+    try {
+      const finalAmount = loyaltyDiscountAmount > 0 ? cartTotalWithDiscount : cartTotal;
+      const res = await fetch("/.netlify/functions/crear-pago", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: cart.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price })),
+          orderId: Date.now(),
+          clientName: clientName.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.init_point) {
+        window.location.href = data.init_point;
+      } else {
+        showToast("❌ Error al generar el pago. Intentá de nuevo.");
+      }
+    } catch {
+      showToast("❌ No se pudo conectar con MercadoPago.");
+    }
+  };
+
   const saveOrder = () => {
     // Validar teléfono obligatorio
     if (!clientPhone.trim()) {
@@ -1998,7 +2024,7 @@ _Maxikiosko Blanqui_`,
                   💳 Método de pago
                 </label>
                 <div
-                  style={{ display: "grid", gridTemplateColumns: (efectivoEnabled || deliveryType === "retiro") ? "1fr 1fr" : "1fr", gap: 8 }}
+                  style={{ display: "grid", gridTemplateColumns: (efectivoEnabled || deliveryType === "retiro") ? "1fr 1fr 1fr" : "1fr 1fr", gap: 8 }}
                 >
                   {(efectivoEnabled || deliveryType === "retiro") && (
                   <button
@@ -2018,6 +2044,13 @@ _Maxikiosko Blanqui_`,
                   >
                     <span style={{ fontSize: 22 }}>📲</span>
                     <span>Transferencias bancarias y billeteras virtuales</span>
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod("mercadopago")}
+                    style={{ padding: "12px 8px", border: "2px solid", borderRadius: 12, fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, borderColor: paymentMethod === "mercadopago" ? "#009EE3" : "#DDD", background: paymentMethod === "mercadopago" ? "#E6F7FF" : "#FAFAFA", color: paymentMethod === "mercadopago" ? "#009EE3" : "#666", }}
+                  >
+                    <span style={{ fontSize: 22 }}>💳</span>
+                    <span>MercadoPago</span>
                   </button>
                 </div>
               </div>
@@ -2115,15 +2148,25 @@ _Maxikiosko Blanqui_`,
                 </div>
               )}
 
-              <button
-                disabled={!clientName.trim()}
-                onClick={saveOrder}
-                style={{ background: !clientName.trim() ? "#CCC" : paymentMethod === "personalpay" ? "#5B4DB0" : "#00A650", color: "#fff", border: "none", width: "100%", padding: "15px 0", borderRadius: 14, fontWeight: 900, fontSize: 17, cursor: !clientName.trim() ? "not-allowed" : "pointer", fontFamily: "inherit", }}
-              >
-                {paymentMethod === "personalpay"
-                  ? "📲 Ya pagué — Confirmar Pedido"
-                  : "✅ Confirmar Pedido"}
-              </button>
+              {paymentMethod === "mercadopago" ? (
+                <button
+                  disabled={!clientName.trim()}
+                  onClick={handlePagarMP}
+                  style={{ background: !clientName.trim() ? "#CCC" : "#009EE3", color: "#fff", border: "none", width: "100%", padding: "15px 0", borderRadius: 14, fontWeight: 900, fontSize: 17, cursor: !clientName.trim() ? "not-allowed" : "pointer", fontFamily: "inherit", }}
+                >
+                  💳 Pagar con MercadoPago — {fmt(loyaltyDiscountAmount > 0 ? cartTotalWithDiscount : cartTotal)}
+                </button>
+              ) : (
+                <button
+                  disabled={!clientName.trim()}
+                  onClick={saveOrder}
+                  style={{ background: !clientName.trim() ? "#CCC" : paymentMethod === "personalpay" ? "#5B4DB0" : "#00A650", color: "#fff", border: "none", width: "100%", padding: "15px 0", borderRadius: 14, fontWeight: 900, fontSize: 17, cursor: !clientName.trim() ? "not-allowed" : "pointer", fontFamily: "inherit", }}
+                >
+                  {paymentMethod === "personalpay"
+                    ? "📲 Ya pagué — Confirmar Pedido"
+                    : "✅ Confirmar Pedido"}
+                </button>
+              )}
               {!clientName.trim() && (
                 <div
                   style={{ textAlign: "center", fontSize: 12, color: "#999", marginTop: 8, }}
