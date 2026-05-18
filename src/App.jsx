@@ -2636,6 +2636,7 @@ _Maxikiosko Blanqui_`,
                   ...prev[key],
                   cashbackAccum: 0,
                   cashbackPending: 0,
+                  pendingDiscount: false,
                 },
               }));
               showToast(`🔄 Cashback de ${client.name || "Cliente"} reseteado a $0`);
