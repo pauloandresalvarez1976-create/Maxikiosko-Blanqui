@@ -6,14 +6,16 @@ exports.handler = async (event) => {
   try {
     const { items, orderId, clientName } = JSON.parse(event.body);
 
+    const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+
     const body = {
-      items: items.map((item) => ({
-        id: String(item.id || item.name),
-        title: item.name,
-        quantity: Number(item.qty),
-        unit_price: Number(item.price),
+      items: [{
+        id: "pedido",
+        title: "Maxikiosko Blanqui",
+        quantity: 1,
+        unit_price: total,
         currency_id: "ARS",
-      })),
+      }],
       payer: { name: clientName || "Cliente" },
       external_reference: String(orderId),
       back_urls: {
