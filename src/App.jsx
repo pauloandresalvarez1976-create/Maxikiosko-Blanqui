@@ -2546,9 +2546,20 @@ _Maxikiosko Blanqui_`,
           return (
             <div style={{ margin: "14px 14px 0", display: "flex", flexDirection: "column", gap: 0 }}>
               {/* Fila 1: productos + pedidos */}
+              <style>{`
+                @keyframes pedidosPulse {
+                  0%, 100% { box-shadow: 0 0 0 0 #E6510088, 0 1px 3px rgba(0,0,0,0.06); }
+                  50% { box-shadow: 0 0 0 7px #E6510022, 0 1px 3px rgba(0,0,0,0.06); }
+                }
+                @keyframes pedidosGlow {
+                  0%, 100% { box-shadow: 0 4px 12px #E6510044; }
+                  50% { box-shadow: 0 4px 22px #E65100aa; }
+                }
+              `}</style>
               <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                 {TABS.slice(0, 2).map(t => {
                   const active = adminTab === t.key;
+                  const hasPending = t.key === "pedidos" && (newOrdersCount > 0 || orders.reduce((s,o) => s + unreadAdminCount(o.id), 0) > 0);
                   return (
                     <button
                       key={t.key}
@@ -2557,16 +2568,16 @@ _Maxikiosko Blanqui_`,
                         flex: 1,
                         display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
                         padding: "10px 6px",
-                        border: `2px solid ${active ? t.color : "#E8E8E8"}`,
+                        border: `2px solid ${active ? t.color : hasPending ? t.color : "#E8E8E8"}`,
                         borderRadius: 14,
                         fontWeight: 800,
                         fontSize: 11,
                         cursor: "pointer",
                         fontFamily: "inherit",
                         transition: "all 0.18s",
-                        background: active ? t.color : "#fff",
+                        background: active ? t.color : hasPending ? "#FFF3E0" : "#fff",
                         color: active ? "#fff" : t.color,
-                        boxShadow: active ? `0 4px 12px ${t.color}44` : "0 1px 3px rgba(0,0,0,0.06)",
+                        animation: !active && hasPending ? "pedidosPulse 1.4s ease-in-out infinite" : active && hasPending ? "pedidosGlow 1.4s ease-in-out infinite" : "none",
                       }}
                     >
                       <span style={{ fontSize: 18 }}>{t.emoji}</span>
