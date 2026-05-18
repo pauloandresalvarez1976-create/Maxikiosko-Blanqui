@@ -3747,55 +3747,48 @@ _Maxikiosko Blanqui_`,
           );
         })()}
 
-        {adminTab === "version" && (() => {
-          // Usar borrador local para evitar que Firebase pise los cambios mientras se edita
-          const draft = versionDraft ?? appVersion;
-          const setDraft = (updater) => setVersionDraft(v => updater(v ?? appVersion));
-          const handleSave = () => {
-            setAppVersion(draft);
-            saveToFirestore("appVersion", draft);
-            setVersionDraft(null);
-            setVersionSaved(true);
-            setTimeout(() => setVersionSaved(false), 2500);
-          };
-          const isDirty = JSON.stringify(draft) !== JSON.stringify(appVersion);
-          return (
-            <div style={{ padding: "16px 14px 40px" }}>
-              <div style={{ fontWeight: 900, fontSize: 17, color: "#222", marginBottom: 18 }}>📋 Versión de la app</div>
-              <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
-                <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 12 }}>🏷️ Número de versión</div>
-                <input
-                  type="text"
-                  value={draft.numero}
-                  onChange={e => setDraft(v => ({ ...v, numero: e.target.value }))}
-                  placeholder="Ej: 1.0"
-                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #DDD", fontSize: 16, fontWeight: 900, fontFamily: "inherit", outline: "none", boxSizing: "border-box", textAlign: "center", letterSpacing: 2 }}
-                />
-              </div>
-              <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
-                <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 12 }}>📝 Novedades de esta versión</div>
-                <div style={{ fontSize: 11, color: "#888", marginBottom: 10 }}>Usá • al inicio de cada línea para hacer una lista</div>
-                <textarea
-                  value={draft.novedades}
-                  onChange={e => setDraft(v => ({ ...v, novedades: e.target.value }))}
-                  placeholder={"• Primera mejora\n• Segunda mejora\n• Tercera mejora"}
-                  rows={8}
-                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #DDD", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", resize: "vertical", lineHeight: 1.7 }}
-                />
-              </div>
-              <button
-                onClick={handleSave}
-                disabled={!isDirty && !versionSaved}
-                style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: versionSaved ? "#1A7A2E" : isDirty ? "#0277BD" : "#CCC", color: "#fff", fontWeight: 900, fontSize: 15, fontFamily: "inherit", cursor: isDirty ? "pointer" : "default", marginBottom: 14, transition: "background 0.25s" }}
-              >
-                {versionSaved ? "✅ ¡Guardado!" : isDirty ? "💾 Guardar cambios" : "Sin cambios"}
-              </button>
-              <div style={{ background: "#E8F5EC", borderRadius: 12, padding: "12px 14px", fontSize: 12, color: "#1A7A2E", fontWeight: 600 }}>
-                💡 Estas novedades se muestran al pie de la tienda para que los clientes vean qué hay de nuevo.
-              </div>
+        {adminTab === "version" && (
+          <div style={{ padding: "16px 14px 40px" }}>
+            <div style={{ fontWeight: 900, fontSize: 17, color: "#222", marginBottom: 18 }}>📋 Versión de la app</div>
+            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
+              <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 12 }}>🏷️ Número de versión</div>
+              <input
+                type="text"
+                value={versionDraft?.numero ?? appVersion.numero}
+                onChange={e => setVersionDraft(v => ({ ...(v ?? appVersion), numero: e.target.value }))}
+                placeholder="Ej: 1.0"
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #DDD", fontSize: 16, fontWeight: 900, fontFamily: "inherit", outline: "none", boxSizing: "border-box", textAlign: "center", letterSpacing: 2 }}
+              />
             </div>
-          );
-        })()}
+            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
+              <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 12 }}>📝 Novedades de esta versión</div>
+              <div style={{ fontSize: 11, color: "#888", marginBottom: 10 }}>Usá • al inicio de cada línea para hacer una lista</div>
+              <textarea
+                value={versionDraft?.novedades ?? appVersion.novedades}
+                onChange={e => setVersionDraft(v => ({ ...(v ?? appVersion), novedades: e.target.value }))}
+                placeholder={"• Primera mejora\n• Segunda mejora\n• Tercera mejora"}
+                rows={8}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "2px solid #DDD", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", resize: "vertical", lineHeight: 1.7 }}
+              />
+            </div>
+            <button
+              onClick={() => {
+                const draft = versionDraft ?? appVersion;
+                setAppVersion(draft);
+                saveToFirestore("appVersion", draft);
+                setVersionDraft(null);
+                setVersionSaved(true);
+                setTimeout(() => setVersionSaved(false), 2500);
+              }}
+              style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: versionSaved ? "#1A7A2E" : versionDraft ? "#0277BD" : "#CCC", color: "#fff", fontWeight: 900, fontSize: 15, fontFamily: "inherit", cursor: versionDraft ? "pointer" : "default", marginBottom: 14, transition: "background 0.25s" }}
+            >
+              {versionSaved ? "✅ ¡Guardado!" : versionDraft ? "💾 Guardar cambios" : "Sin cambios"}
+            </button>
+            <div style={{ background: "#E8F5EC", borderRadius: 12, padding: "12px 14px", fontSize: 12, color: "#1A7A2E", fontWeight: 600 }}>
+              💡 Estas novedades se muestran al pie de la tienda para que los clientes vean qué hay de nuevo.
+            </div>
+          </div>
+        )}
 
         {adminTab === "banners" && (
           <div style={{ padding: "14px 14px 32px" }}>
