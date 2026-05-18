@@ -2626,6 +2626,21 @@ _Maxikiosko Blanqui_`,
             const blockedClients = clientList.filter((c) => c.blocked);
             const totalBlocked = blockedClients.length;
 
+            // Helper para resetear cashback de un cliente
+            const resetCashback = (client) => {
+              const key = (client.phone || "").trim() || (client.name || "").trim().toLowerCase();
+              if (!key) return;
+              setCustomers((prev) => ({
+                ...prev,
+                [key]: {
+                  ...prev[key],
+                  cashbackAccum: 0,
+                  cashbackPending: 0,
+                },
+              }));
+              showToast(`🔄 Cashback de ${client.name || "Cliente"} reseteado a $0`);
+            };
+
             // Helper para alternar bloqueo manual
             const toggleBlock = (client) => {
               const key = (client.phone || "").trim() || (client.name || "").trim().toLowerCase();
@@ -3154,13 +3169,27 @@ _Maxikiosko Blanqui_`,
                             </div>
                           )}
 
-                          {/* Botón Bloquear/Desbloquear */}
-                          <button
-                            onClick={() => toggleBlock(c)}
-                            style={{ marginTop: 10, width: "100%", padding: "9px 12px", background: c.blocked ? "#1A7A2E" : "#FFF3E0", color: c.blocked ? "#fff" : "#CC1111", border: c.blocked ? "none" : "1.5px solid #CC1111", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
-                          >
-                            {c.blocked ? "✅ Desbloquear cliente" : "🚫 Bloquear cliente"}
-                          </button>
+                          {/* Botones Bloquear/Desbloquear y Reset Cashback */}
+                          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                            <button
+                              onClick={() => toggleBlock(c)}
+                              style={{ flex: 1, padding: "9px 12px", background: c.blocked ? "#1A7A2E" : "#FFF3E0", color: c.blocked ? "#fff" : "#CC1111", border: c.blocked ? "none" : "1.5px solid #CC1111", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
+                            >
+                              {c.blocked ? "✅ Desbloquear cliente" : "🚫 Bloquear cliente"}
+                            </button>
+                            {loyaltyMode === "cashback" && (
+                              <button
+                                onClick={() => {
+                                  if (window.confirm(`¿Resetear el cashback de ${c.name || "este cliente"} a $0?`)) {
+                                    resetCashback(c);
+                                  }
+                                }}
+                                style={{ flex: 1, padding: "9px 12px", background: "#F3F0FF", color: "#6A1B9A", border: "1.5px solid #9C27B0", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
+                              >
+                                🔄 Resetear cashback
+                              </button>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
