@@ -1177,7 +1177,7 @@ function App() {
           newPendingDiscountPct = existing?.pendingDiscountPct || 10;
         }
       } else if (loyaltyMode === "cashback") {
-        const earned = Math.round(cartTotal * CASHBACK_RATE);
+        const earned = existing?.cashbackDisabled ? 0 : Math.round(cartTotal * CASHBACK_RATE);
         // Verificar vencimiento — si la última compra fue hace más de X días, resetear
         const diasVencimiento = cashbackConfig.vencimientoDias || 30;
         const ultimaCompra = existing?.ultimaCompra || null;
@@ -2585,6 +2585,38 @@ _Maxikiosko Blanqui_`,
               showToast(`🔄 Cashback de ${client.name || "Cliente"} reseteado a $0`);
             };
 
+            // Helper para eliminar cliente
+            const deleteClient = (client) => {
+              const key = (client.phone || "").trim() || (client.name || "").trim().toLowerCase();
+              if (!key) return;
+              if (!window.confirm(`¿Eliminar a ${client.name || "este cliente"} definitivamente? Esta acción no se puede deshacer.`)) return;
+              setCustomers((prev) => {
+                const next = { ...prev };
+                delete next[key];
+                return next;
+              });
+              showToast(`🗑️ ${client.name || "Cliente"} eliminado`);
+            };
+
+            // Helper para activar/desactivar cashback individual
+            const toggleCashbackIndividual = (client) => {
+              const key = (client.phone || "").trim() || (client.name || "").trim().toLowerCase();
+              if (!key) return;
+              const wasEnabled = client.cashbackDisabled !== true;
+              setCustomers((prev) => ({
+                ...prev,
+                [key]: {
+                  ...prev[key],
+                  cashbackDisabled: !prev[key]?.cashbackDisabled,
+                },
+              }));
+              showToast(
+                wasEnabled
+                  ? `❌ Cashback desactivado para ${client.name || "Cliente"}`
+                  : `✅ Cashback activado para ${client.name || "Cliente"}`
+              );
+            };
+
             // Helper para alternar bloqueo manual
             const toggleBlock = (client) => {
               const key = (client.phone || "").trim() || (client.name || "").trim().toLowerCase();
@@ -3134,6 +3166,22 @@ _Maxikiosko Blanqui_`,
                               </button>
                             )}
                           </div>
+                          {/* Botón cashback individual */}
+                          {loyaltyMode === "cashback" && (
+                            <button
+                              onClick={() => toggleCashbackIndividual(c)}
+                              style={{ width: "100%", marginTop: 8, padding: "9px 12px", background: c.cashbackDisabled ? "#F1F8E9" : "#FFF8E1", color: c.cashbackDisabled ? "#388E3C" : "#F57F17", border: c.cashbackDisabled ? "1.5px solid #81C784" : "1.5px solid #FFB300", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
+                            >
+                              {c.cashbackDisabled ? "💰 Activar cashback" : "🚫 Excluir del cashback"}
+                            </button>
+                          )}
+                          {/* Botón eliminar cliente */}
+                          <button
+                            onClick={() => deleteClient(c)}
+                            style={{ width: "100%", marginTop: 8, padding: "9px 12px", background: "#FFF0F0", color: "#990000", border: "1.5px solid #FFAAAA", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
+                          >
+                            🗑️ Eliminar cliente
+                          </button>
                         </div>
                       );
                     })}
