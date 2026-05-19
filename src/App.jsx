@@ -2594,6 +2594,7 @@ _Maxikiosko Blanqui_`,
                 const next = { ...prev };
                 delete next[key];
                 saveToFirestore("customers", next);
+                localStorage.setItem("mk_customers", JSON.stringify(next));
                 return next;
               });
               showToast(`🗑️ ${client.name || "Cliente"} eliminado`);
