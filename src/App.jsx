@@ -2593,6 +2593,7 @@ _Maxikiosko Blanqui_`,
               setCustomers((prev) => {
                 const next = { ...prev };
                 delete next[key];
+                saveToFirestore("customers", next);
                 return next;
               });
               showToast(`🗑️ ${client.name || "Cliente"} eliminado`);
