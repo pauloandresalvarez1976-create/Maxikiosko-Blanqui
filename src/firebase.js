@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
-import { getStorage, ref, uploadString, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { getStorage, ref, uploadString, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBuskgBAZpl_B1MpmuTysth2ItuIN7d4yw",
@@ -41,17 +41,25 @@ export async function deleteProductPhoto(productId) {
 }
 
 // Subir imagen/GIF del banner publicitario a Firebase Storage y devolver la URL
-export async function uploadBannerImage(file) {
-  try {
-    const ext = file.name.split(".").pop() || "jpg";
-    const storageRef = ref(storage, `banners/adBanner_${Date.now()}.${ext}`);
-    await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(storageRef);
-    return url;
-  } catch (e) {
-    console.warn("Banner upload error:", e);
-    return null;
-  }
+export function uploadBannerImage(file) {
+  return new Promise((resolve, reject) => {
+    try {
+      const storageRef = ref(storage, `banners/${Date.now()}_${file.name}`);
+      // Para GIFs no comprimimos, subimos directo
+      const task = uploadBytesResumable(storageRef, file, { contentType: file.type });
+      task.on(
+        "state_changed",
+        null,
+        (err) => reject(err),
+        async () => {
+          const url = await getDownloadURL(task.snapshot.ref);
+          resolve(url);
+        }
+      );
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 
 // Eliminar imagen del banner de Firebase Storage por URL
