@@ -21,6 +21,7 @@ const INITIAL_PRODUCTS = RAW_PRODUCTS.map((p) => ({
   enabled: p.e === true,
   lowStock: p.ls === true,
   emoji: getEmoji(p.c),
+  byWeight: false,     // true = se vende por peso (mínimo 100g, saltos de 50g)
   offerDiscount: null, // null = sin oferta, número 5-100 = % descuento, "2x1" = 2x1
   customPhoto: null,   // base64 o URL personalizada subida por el admin
 }));
@@ -591,7 +592,7 @@ function App() {
       `📅 *Fecha:* ${order.date}`,
       ``,
       `*─── Productos ───*`,
-      ...order.items.map(i => `• ${i.emoji || "🛒"} ${i.name} ×${i.qty}  $${(i.price * i.qty).toLocaleString("es-AR")}`),
+      ...order.items.map(i => i.byWeight ? `• ${i.emoji || "🛒"} ${i.name} ${i.grams || i.qty}g  $${Math.round(i.price * (i.grams || i.qty) / 1000).toLocaleString("es-AR")}` : `• ${i.emoji || "🛒"} ${i.name} ×${i.qty}  $${(i.price * i.qty).toLocaleString("es-AR")}`),
       ``,
       order.discountApplied > 0 ? `🎁 *Descuento fidelización:* -$${order.discountApplied.toLocaleString("es-AR")}` : null,
       `💰 *TOTAL: $${order.total.toLocaleString("es-AR")}*`,
@@ -813,7 +814,7 @@ function App() {
   };
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const cartTotal = cart.reduce((s, i) => s + (i.byWeight ? Math.round(i.price * (i.grams || i.qty) / 1000) : i.price * i.qty), 0);
   const updateCartQty = (id, d) =>
     setCart((prev) =>
       prev.map((i) => {
@@ -1962,10 +1963,10 @@ _Maxikiosko Blanqui_`,
                     style={{ display: "flex", justifyContent: "space-between", marginBottom: 4, color: "#444", }}
                   >
                     <span>
-                      {i.name} x{i.qty}
+                      {i.name} {i.byWeight ? `${i.grams || i.qty}g` : `x${i.qty}`}
                     </span>
                     <span style={{ fontWeight: 700 }}>
-                      {fmt(i.price * i.qty)}
+                      {i.byWeight ? fmt(Math.round(i.price * (i.grams || i.qty) / 1000)) : fmt(i.price * i.qty)}
                     </span>
                   </div>
                 ))}
@@ -4718,6 +4719,7 @@ _Maxikiosko Blanqui_`,
                         stock: p.stock,
                         offerDiscount: p.offerDiscount ?? null,
                         customPhoto: p.customPhoto ?? null,
+                        byWeight: p.byWeight ?? false,
                       })
                     }
                     style={{ background: "#EEF7FF", border: "none", borderRadius: 8, padding: "6px 9px", fontSize: 13, cursor: "pointer", color: "#1565C0", fontWeight: 800, flexShrink: 0, }}
@@ -4816,7 +4818,7 @@ _Maxikiosko Blanqui_`,
               setProducts((prev) =>
                 prev.map((p) =>
                   p.id === editProduct.id
-                    ? { ...p, name: editProduct.name?.trim() || p.name, price: newPrice, stock: newStock, offerDiscount: editProduct.offerDiscount ?? null, customPhoto: finalPhoto }
+                    ? { ...p, name: editProduct.name?.trim() || p.name, price: newPrice, stock: newStock, offerDiscount: editProduct.offerDiscount ?? null, customPhoto: finalPhoto, byWeight: editProduct.byWeight ?? false }
                     : p
                 )
               );
@@ -4911,7 +4913,7 @@ _Maxikiosko Blanqui_`,
 
                     <div>
                       <label style={{ fontSize: 12, fontWeight: 800, color: "#444", display: "block", marginBottom: 6 }}>
-                        💲 PRECIO DE VENTA
+                        💲 {editProduct.byWeight ? "PRECIO POR KILO" : "PRECIO DE VENTA"}
                       </label>
                       <div
                         style={{ display: "flex", alignItems: "center", gap: 8, }}
@@ -4938,9 +4940,24 @@ _Maxikiosko Blanqui_`,
                       <div
                         style={{ fontSize: 11, color: "#999", marginTop: 4 }}
                       >
-                        Precio actual: {fmt(prod.price)}
+                        {editProduct.byWeight ? "Precio por kilo actual: " : "Precio actual: "}{fmt(prod.price)}
                       </div>
                     </div>
+
+                    {/* VENTA POR PESO */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: editProduct.byWeight ? "#F0FAF2" : "#F9F9F9", border: `1.5px solid ${editProduct.byWeight ? "#1A7A2E" : "#E0E0E0"}`, borderRadius: 10, padding: "10px 14px" }}>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: "#444" }}>⚖️ VENTA POR PESO</div>
+                        <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>Mínimo 100g, saltos de 50g</div>
+                      </div>
+                      <div
+                        onClick={() => setEditProduct(prev => ({ ...prev, byWeight: !prev.byWeight }))}
+                        style={{ width: 44, height: 24, borderRadius: 12, background: editProduct.byWeight ? "#1A7A2E" : "#CCC", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
+                      >
+                        <div style={{ position: "absolute", top: 3, left: editProduct.byWeight ? 23 : 3, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
+                      </div>
+                    </div>
+
                     <div>
                       <label
                         style={{ fontSize: 12, fontWeight: 800, color: "#444", display: "block", marginBottom: 6, }}
@@ -7802,27 +7819,57 @@ _Maxikiosko Blanqui_`,
                     ⚠️ Pocas unidades
                   </span>
                 )}
-                <div
-                  style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 15, marginTop: "auto", }}
-                >
-                  {fmt(p.price)}
+                <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 15, marginTop: "auto" }}>
+                  {p.byWeight ? (
+                    <span>{fmt(p.price)}<span style={{ fontSize: 10, fontWeight: 600, color: "#666" }}>/kg</span></span>
+                  ) : fmt(p.price)}
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addToCart(p);
-                  }}
-                  disabled={!isStoreOpen}
-                  style={{ background: !isStoreOpen ? "#BBBBBB" : !loggedUser ? "#555" : "#1A7A2E", color: "#fff", border: "none", borderRadius: 8, padding: "8px 0", fontWeight: 800, cursor: isStoreOpen ? "pointer" : "not-allowed", fontSize: 11, fontFamily: "inherit", }}
-                  onMouseEnter={(e) => {
-                    if (isStoreOpen) e.currentTarget.style.background = loggedUser ? "#145C22" : "#333";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (isStoreOpen) e.currentTarget.style.background = loggedUser ? "#1A7A2E" : "#555";
-                  }}
-                >
-                  {!isStoreOpen ? "🔒 Cerrado" : !loggedUser ? "🔒 Iniciá sesión" : "+ Agregar"}
-                </button>
+                {p.byWeight ? (
+                  (() => {
+                    const inCart = cart.find(i => i.id === p.id);
+                    const grams = inCart?.grams || 100;
+                    const priceForGrams = Math.round(p.price * grams / 1000);
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        {inCart ? (
+                          <>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F0FAF2", borderRadius: 8, padding: "4px 6px" }}>
+                              <button onClick={(e) => { e.stopPropagation(); const newGrams = Math.max(100, inCart.grams - 50); setCart(prev => prev.map(i => i.id === p.id ? { ...i, grams: newGrams, qty: newGrams } : i)); }} style={{ background: "#1A7A2E", color: "#fff", border: "none", borderRadius: 6, width: 26, height: 26, fontWeight: 900, fontSize: 16, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                              <span style={{ fontSize: 12, fontWeight: 800, color: "#1A2E1A" }}>{inCart.grams}g</span>
+                              <button onClick={(e) => { e.stopPropagation(); setCart(prev => prev.map(i => i.id === p.id ? { ...i, grams: inCart.grams + 50, qty: inCart.grams + 50 } : i)); }} style={{ background: "#1A7A2E", color: "#fff", border: "none", borderRadius: 6, width: 26, height: 26, fontWeight: 900, fontSize: 16, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                            </div>
+                            <div style={{ fontSize: 11, color: "#1A7A2E", fontWeight: 800, textAlign: "center" }}>{fmt(Math.round(p.price * inCart.grams / 1000))}</div>
+                          </>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); if (!loggedUser) { setShowSocialLogin(true); return; } if (!isStoreOpen) return; setCart(prev => [...prev, { ...p, qty: 100, grams: 100, price: p.price }]); showToast(`🛒 ${p.name} agregado (100g)`); }}
+                            disabled={!isStoreOpen}
+                            style={{ background: !isStoreOpen ? "#BBBBBB" : !loggedUser ? "#555" : "#1A7A2E", color: "#fff", border: "none", borderRadius: 8, padding: "8px 0", fontWeight: 800, cursor: isStoreOpen ? "pointer" : "not-allowed", fontSize: 11, fontFamily: "inherit" }}
+                          >
+                            {!isStoreOpen ? "🔒 Cerrado" : !loggedUser ? "🔒 Iniciá sesión" : "⚖️ Agregar"}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(p);
+                    }}
+                    disabled={!isStoreOpen}
+                    style={{ background: !isStoreOpen ? "#BBBBBB" : !loggedUser ? "#555" : "#1A7A2E", color: "#fff", border: "none", borderRadius: 8, padding: "8px 0", fontWeight: 800, cursor: isStoreOpen ? "pointer" : "not-allowed", fontSize: 11, fontFamily: "inherit", }}
+                    onMouseEnter={(e) => {
+                      if (isStoreOpen) e.currentTarget.style.background = loggedUser ? "#145C22" : "#333";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (isStoreOpen) e.currentTarget.style.background = loggedUser ? "#1A7A2E" : "#555";
+                    }}
+                  >
+                    {!isStoreOpen ? "🔒 Cerrado" : !loggedUser ? "🔒 Iniciá sesión" : "+ Agregar"}
+                  </button>
+                )}
               </div>
             ))}
           </div>
