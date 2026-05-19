@@ -2590,14 +2590,13 @@ _Maxikiosko Blanqui_`,
               const key = (client.phone || "").trim() || (client.name || "").trim().toLowerCase();
               if (!key) return;
               if (!window.confirm(`¿Eliminar a ${client.name || "este cliente"} definitivamente? Esta acción no se puede deshacer.`)) return;
-              setCustomers((prev) => {
-                const next = { ...prev };
-                delete next[key];
-                saveToFirestore("customers", next);
-                localStorage.setItem("mk_customers", JSON.stringify(next));
-                return next;
+              const next = { ...customers };
+              delete next[key];
+              localStorage.setItem("mk_customers", JSON.stringify(next));
+              saveToFirestore("customers", next).then(() => {
+                setCustomers(next);
+                showToast(`🗑️ ${client.name || "Cliente"} eliminado`);
               });
-              showToast(`🗑️ ${client.name || "Cliente"} eliminado`);
             };
 
             // Helper para activar/desactivar cashback individual
