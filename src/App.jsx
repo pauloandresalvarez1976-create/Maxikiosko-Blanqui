@@ -4833,7 +4833,7 @@ _Maxikiosko Blanqui_`,
                 }}
               >
                 <div
-                  style={{ background: "#fff", borderRadius: "20px 20px 0 0", padding: "22px 20px 36px", width: "100%", maxWidth: 480, boxShadow: "0 -4px 30px rgba(0,0,0,0.2)", }}
+                  style={{ background: "#fff", borderRadius: "20px 20px 0 0", padding: "22px 20px 36px", width: "100%", maxWidth: 480, boxShadow: "0 -4px 30px rgba(0,0,0,0.2)", maxHeight: "92vh", overflowY: "auto" }}
                 >
                   <div
                     style={{ width: 40, height: 4, borderRadius: 2, background: "#DDD", margin: "0 auto 18px", }}
