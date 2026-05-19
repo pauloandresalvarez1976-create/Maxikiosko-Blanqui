@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { saveToFirestore, loadFromFirestore, subscribeToFirestore, FIREBASE_KEYS } from "./useFirestore";
-import { requestFCMToken, onForegroundMessage, uploadProductPhoto, deleteProductPhoto } from "./firebase";
+import { requestFCMToken, onForegroundMessage, uploadProductPhoto, deleteProductPhoto, uploadBannerImage, deleteBannerImage } from "./firebase";
 import RAW_PRODUCTS from "./products.json";
 import EMOJI_MAP from "./emojis.json";
 import Toggle from "./components/Toggle";
@@ -3759,7 +3759,14 @@ _Maxikiosko Blanqui_`,
 
 
 
-        {adminTab === "banners" && (
+        {adminTab === "banners" && (() => {
+          // Helper: elimina imagen de Firebase Storage si es una URL de Storage
+          const deleteBannerFromStorage = async (url) => {
+            if (url && url.startsWith("https://firebasestorage")) {
+              try { await deleteBannerImage(url); } catch (e) { /* no importa */ }
+            }
+          };
+          return (
           <div style={{ padding: "14px 14px 32px" }}>
             <p
               style={{ fontSize: 13, color: "#666", marginBottom: 14, fontWeight: 600, }}
@@ -3913,7 +3920,11 @@ _Maxikiosko Blanqui_`,
                     <span>👁️ PREVIEW EN TIEMPO REAL</span>
                     {!adBanner.active && <span style={{ color: "#CC1111", fontWeight: 800 }}>— Banner inactivo (no visible en tienda)</span>}
                   </div>
-                  {(adBanner.type === "image" || adBanner.type === "gif" || adBanner.type === "flyer") && adBanner.imageUrl ? (
+                  {(adBanner.type === "image" || adBanner.type === "gif" || adBanner.type === "flyer") && adBanner.imageUrl === "__uploading__" ? (
+                    <div style={{ background: "#F5F5F5", padding: "24px", textAlign: "center", color: "#888", fontWeight: 700, fontSize: 13 }}>
+                      ⏳ Subiendo imagen a Firebase...
+                    </div>
+                  ) : (adBanner.type === "image" || adBanner.type === "gif" || adBanner.type === "flyer") && adBanner.imageUrl ? (
                     <div style={{ position: "relative", width: "100%" }}>
                       <img src={adBanner.imageUrl} alt="preview" style={{ width: "100%", maxHeight: adBanner.type === "flyer" ? 260 : 160, objectFit: adBanner.type === "flyer" ? "contain" : "cover", display: "block", background: adBanner.bgColor }} />
                       {adBanner.text && (
@@ -3977,13 +3988,22 @@ _Maxikiosko Blanqui_`,
                             type="file"
                             accept="image/*,.gif,.webp,.svg,.bmp,.tiff,.tif,.avif,.heic,.heif,.ico"
                             style={{ display: "none" }}
-                            onChange={e => {
+                            onChange={async e => {
                               const file = e.target.files[0];
                               if (!file) return;
-                              const reader = new FileReader();
-                              reader.onload = ev => setAdBanner(p => ({ ...p, imageUrl: ev.target.result }));
-                              reader.readAsDataURL(file);
                               e.target.value = "";
+                              const oldUrl = adBanner.imageUrl;
+                              setAdBanner(p => ({ ...p, imageUrl: "__uploading__" }));
+                              try {
+                                const url = await uploadBannerImage(file);
+                                deleteBannerFromStorage(oldUrl);
+                                setAdBanner(p => ({ ...p, imageUrl: url }));
+                                showToast("✅ Imagen subida correctamente");
+                              } catch (err) {
+                                console.error(err);
+                                setAdBanner(p => ({ ...p, imageUrl: "" }));
+                                showToast("❌ Error al subir la imagen");
+                              }
                             }}
                           />
                         </label>
@@ -3991,22 +4011,28 @@ _Maxikiosko Blanqui_`,
                           — o pegá una URL pública —
                         </div>
                         <input
-                          value={adBanner.imageUrl && adBanner.imageUrl.startsWith("data:") ? "(imagen subida desde dispositivo)" : adBanner.imageUrl}
+                          value={
+                            adBanner.imageUrl === "__uploading__" ? "⏳ Subiendo imagen..." :
+                            adBanner.imageUrl && adBanner.imageUrl.startsWith("data:") ? "(imagen guardada como base64 — re-subí para mejorar)" :
+                            adBanner.imageUrl && adBanner.imageUrl.startsWith("https://") ? "(imagen en Firebase Storage ✅)" :
+                            adBanner.imageUrl || ""
+                          }
                           onChange={e => setAdBanner(p => ({ ...p, imageUrl: e.target.value }))}
                           placeholder="https://... (URL de la imagen o GIF)"
-                          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E0F0E5", fontSize: 12, fontFamily: "inherit", outline: "none", boxSizing: "border-box", color: adBanner.imageUrl && adBanner.imageUrl.startsWith("data:") ? "#1A7A2E" : "#333", }}
+                          style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E0F0E5", fontSize: 12, fontFamily: "inherit", outline: "none", boxSizing: "border-box", color: adBanner.imageUrl && adBanner.imageUrl.startsWith("https://") ? "#1A7A2E" : adBanner.imageUrl && adBanner.imageUrl.startsWith("data:") ? "#E65100" : "#333", }}
                           onFocus={e => {
-                            if (adBanner.imageUrl && adBanner.imageUrl.startsWith("data:")) {
-                              if (window.confirm("¿Reemplazar la imagen subida con una URL?")) {
+                            if (adBanner.imageUrl && (adBanner.imageUrl.startsWith("data:") || adBanner.imageUrl.startsWith("https://"))) {
+                              if (window.confirm("¿Reemplazar la imagen actual con una URL?")) {
+                                deleteBannerFromStorage(adBanner.imageUrl);
                                 setAdBanner(p => ({ ...p, imageUrl: "" }));
                               }
                               e.target.blur();
                             }
                           }}
                         />
-                        {adBanner.imageUrl && (
+                        {adBanner.imageUrl && adBanner.imageUrl !== "__uploading__" && (
                           <button
-                            onClick={() => setAdBanner(p => ({ ...p, imageUrl: "" }))}
+                            onClick={() => { deleteBannerFromStorage(adBanner.imageUrl); setAdBanner(p => ({ ...p, imageUrl: "" })); }}
                             style={{ marginTop: 6, background: "none", border: "1.5px solid #EEE", borderRadius: 6, padding: "4px 10px", fontSize: 11, color: "#CC1111", cursor: "pointer", fontWeight: 700, fontFamily: "inherit" }}
                           >
                             🗑️ Quitar imagen
@@ -4326,7 +4352,8 @@ _Maxikiosko Blanqui_`,
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* ORDERS TAB */}
         {adminTab === "pedidos" && (
