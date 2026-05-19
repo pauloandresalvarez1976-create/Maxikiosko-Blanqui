@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { saveToFirestore, loadFromFirestore, subscribeToFirestore, FIREBASE_KEYS } from "./useFirestore";
+import { saveToFirestore, loadFromFirestore, subscribeToFirestore, deleteCustomerFromFirestore, FIREBASE_KEYS } from "./useFirestore";
 import { requestFCMToken, onForegroundMessage, uploadProductPhoto, deleteProductPhoto } from "./firebase";
 import RAW_PRODUCTS from "./products.json";
 import EMOJI_MAP from "./emojis.json";
@@ -2593,10 +2593,9 @@ _Maxikiosko Blanqui_`,
               const next = { ...customers };
               delete next[key];
               localStorage.setItem("mk_customers", JSON.stringify(next));
-              saveToFirestore("customers", next).then(() => {
-                setCustomers(next);
-                showToast(`🗑️ ${client.name || "Cliente"} eliminado`);
-              });
+              setCustomers(next);
+              deleteCustomerFromFirestore(key);
+              showToast(`🗑️ ${client.name || "Cliente"} eliminado`);
             };
 
             // Helper para activar/desactivar cashback individual
