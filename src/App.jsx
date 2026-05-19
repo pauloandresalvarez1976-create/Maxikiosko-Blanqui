@@ -3996,13 +3996,18 @@ _Maxikiosko Blanqui_`,
                               setAdBanner(p => ({ ...p, imageUrl: "__uploading__" }));
                               try {
                                 const url = await uploadBannerImage(file);
-                                deleteBannerFromStorage(oldUrl);
-                                setAdBanner(p => ({ ...p, imageUrl: url }));
-                                showToast("✅ Imagen subida correctamente");
+                                if (url) {
+                                  deleteBannerFromStorage(oldUrl);
+                                  setAdBanner(p => ({ ...p, imageUrl: url }));
+                                  showToast("✅ Imagen subida correctamente");
+                                } else {
+                                  setAdBanner(p => ({ ...p, imageUrl: oldUrl }));
+                                  showToast("❌ Error al subir la imagen, intentá de nuevo");
+                                }
                               } catch (err) {
                                 console.error(err);
-                                setAdBanner(p => ({ ...p, imageUrl: "" }));
-                                showToast("❌ Error al subir la imagen");
+                                setAdBanner(p => ({ ...p, imageUrl: oldUrl }));
+                                showToast("❌ Error al subir la imagen: " + (err?.message || ""));
                               }
                             }}
                           />
