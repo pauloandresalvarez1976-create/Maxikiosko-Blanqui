@@ -313,7 +313,6 @@ function App() {
     horarioTexto: "Lunes a Viernes: 08:00 - 22:00\nSábado: 09:00 - 21:00\nDomingo: Cerrado",
   });
 
-
   const [loggedUser, setLoggedUser] = useState(() => {
     try {
       const stored = localStorage.getItem("mk_loggedUser");
@@ -1178,7 +1177,7 @@ function App() {
           newPendingDiscountPct = existing?.pendingDiscountPct || 10;
         }
       } else if (loyaltyMode === "cashback") {
-        const earned = existing?.cashbackDisabled ? 0 : Math.round(cartTotal * CASHBACK_RATE);
+        const earned = Math.round(cartTotal * CASHBACK_RATE);
         // Verificar vencimiento — si la última compra fue hace más de X días, resetear
         const diasVencimiento = cashbackConfig.vencimientoDias || 30;
         const ultimaCompra = existing?.ultimaCompra || null;
@@ -2606,25 +2605,6 @@ _Maxikiosko Blanqui_`,
                   : `🚫 ${client.name || "Cliente"} bloqueado`
               );
             };
-
-            // Helper para activar/desactivar cashback individual
-            const toggleCashbackIndividual = (client) => {
-              const key = (client.phone || "").trim() || (client.name || "").trim().toLowerCase();
-              if (!key) return;
-              const wasEnabled = client.cashbackDisabled !== true;
-              setCustomers((prev) => ({
-                ...prev,
-                [key]: {
-                  ...prev[key],
-                  cashbackDisabled: !prev[key]?.cashbackDisabled,
-                },
-              }));
-              showToast(
-                wasEnabled
-                  ? `❌ Cashback desactivado para ${client.name || "Cliente"}`
-                  : `✅ Cashback activado para ${client.name || "Cliente"}`
-              );
-            };
             return (
               <div style={{ padding: "14px 14px 32px" }}>
 
@@ -3154,15 +3134,6 @@ _Maxikiosko Blanqui_`,
                               </button>
                             )}
                           </div>
-                          {/* Botón activar/desactivar cashback individual */}
-                          {loyaltyMode === "cashback" && (
-                            <button
-                              onClick={() => toggleCashbackIndividual(c)}
-                              style={{ width: "100%", marginTop: 8, padding: "9px 12px", background: c.cashbackDisabled ? "#F1F8E9" : "#FFF8E1", color: c.cashbackDisabled ? "#388E3C" : "#F57F17", border: c.cashbackDisabled ? "1.5px solid #81C784" : "1.5px solid #FFB300", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
-                            >
-                              {c.cashbackDisabled ? "💰 Activar cashback" : "🚫 Excluir del cashback"}
-                            </button>
-                          )}
                         </div>
                       );
                     })}
@@ -3744,6 +3715,279 @@ _Maxikiosko Blanqui_`,
         })()}
 
 
+
+        {adminTab === "banners" && (
+          <div style={{ padding: "14px 14px 32px" }}>
+            <p
+              style={{ fontSize: 13, color: "#666", marginBottom: 14, fontWeight: 600, }}
+            >
+              Editá el texto y emoji de cada cartel rotativo de la tienda.
+            </p>
+            {banners.map((b, idx) => (
+              <div
+                key={idx}
+                style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", }}
+              >
+                {/* Preview del banner */}
+                <div
+                  style={{ borderRadius: 10, padding: "10px 14px", marginBottom: 12, background: b.bg, display: "flex", alignItems: "center", justifyContent: "space-between", }}
+                >
+                  <div>
+                    <div
+                      style={{ color: b.accent, fontWeight: 900, fontSize: 14 }}
+                    >
+                      {b.title}
+                    </div>
+                    <div
+                      style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, marginTop: 2, }}
+                    >
+                      {b.sub}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 28 }}>{b.emoji}</div>
+                </div>
+
+                {/* Campos editables */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  <div>
+                    <label
+                      style={{ fontSize: 11, fontWeight: 700, color: "#666", display: "block", marginBottom: 3, }}
+                    >
+                      TÍTULO
+                    </label>
+                    <input
+                      value={b.title}
+                      onChange={(e) =>
+                        setBanners((prev) =>
+                          prev.map((x, i) =>
+                            i === idx ? { ...x, title: e.target.value } : x
+                          )
+                        )
+                      }
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E0F0E5", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", }}
+                      placeholder="Título del banner"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      style={{ fontSize: 11, fontWeight: 700, color: "#666", display: "block", marginBottom: 3, }}
+                    >
+                      SUBTÍTULO
+                    </label>
+                    <input
+                      value={b.sub}
+                      onChange={(e) =>
+                        setBanners((prev) =>
+                          prev.map((x, i) =>
+                            i === idx ? { ...x, sub: e.target.value } : x
+                          )
+                        )
+                      }
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E0F0E5", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", }}
+                      placeholder="Subtítulo del banner"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      style={{ fontSize: 11, fontWeight: 700, color: "#666", display: "block", marginBottom: 3, }}
+                    >
+                      EMOJI
+                    </label>
+                    <input
+                      value={b.emoji}
+                      onChange={(e) =>
+                        setBanners((prev) =>
+                          prev.map((x, i) =>
+                            i === idx ? { ...x, emoji: e.target.value } : x
+                          )
+                        )
+                      }
+                      style={{ width: 60, padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E0F0E5", fontSize: 20, fontFamily: "inherit", outline: "none", textAlign: "center", }}
+                      maxLength={4}
+                    />
+                    {/* Paleta de emojis precargados */}
+                    <div style={{ marginTop: 8 }}>
+                      {[
+                        { label: "🔥 Ofertas", items: ["🔥","💥","⚡","🚨","🏷️","💸","🎯","📣","‼️","🔖"] },
+                        { label: "🎁 Promos", items: ["🎁","🎉","🎊","🥳","🎀","🎈","🏆","🥇","💯","✅"] },
+                        { label: "✨ Destacados", items: ["✨","🌟","⭐","💫","👑","💎","🤩","😍","🆕","🆓"] },
+                        { label: "🛍️ Compras", items: ["🛍️","🛒","💳","📦","🚚","🏪","🏬","🤝","📲","💬"] },
+                        { label: "🍕 Productos", items: ["🍕","🥤","🍫","🧃","🥐","🍭","🧴","🧹","🫙","🌿"] },
+                      ].map(group => (
+                        <div key={group.label} style={{ marginBottom: 8 }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#999", marginBottom: 4, letterSpacing: 0.5 }}>{group.label}</div>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                            {group.items.map(em => (
+                              <button
+                                key={em}
+                                onClick={() => setBanners(prev => prev.map((x, i) => i === idx ? { ...x, emoji: em } : x))}
+                                title={em}
+                                style={{ width: 34, height: 34, fontSize: 19, border: b.emoji === em ? "2px solid #1A7A2E" : "1.5px solid #E8E8E8", borderRadius: 9, cursor: "pointer", background: b.emoji === em ? "#E8F5EC" : "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, transition: "all 0.12s", transform: b.emoji === em ? "scale(1.15)" : "scale(1)", }}
+                              >{em}</button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div
+              style={{ background: "#F0FAF2", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#1A7A2E", fontWeight: 600, }}
+            >
+              💡 Los cambios se ven en la tienda al instante
+            </div>
+
+            {/* Cartel de Contacto */}
+            <div style={{ marginTop: 16 }}>
+              <p
+                style={{ fontSize: 13, color: "#444", fontWeight: 800, marginBottom: 8, }}
+              >
+                🏪 Cartel de la sección Contacto
+              </p>
+              <div
+                style={{ background: "#fff", borderRadius: 14, padding: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", }}
+              >
+                {/* Preview */}
+                <div
+                  style={{ background: "linear-gradient(135deg,#1A7A2E,#CC1111)", borderRadius: 10, padding: "12px 14px", marginBottom: 12, textAlign: "center", color: "#fff", }}
+                >
+                  <div style={{ fontSize: 32, marginBottom: 4 }}>
+                    {contactBanner.emoji}
+                  </div>
+                  <div style={{ fontWeight: 900, fontSize: 15 }}>
+                    {contactBanner.name}
+                  </div>
+                  <div style={{ fontSize: 11, opacity: 0.9, marginTop: 2 }}>
+                    {contactBanner.sub}
+                  </div>
+                </div>
+                {/* Campos */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  <div>
+                    <label
+                      style={{ fontSize: 11, fontWeight: 700, color: "#666", display: "block", marginBottom: 3, }}
+                    >
+                      NOMBRE DEL NEGOCIO
+                    </label>
+                    <input
+                      value={contactBanner.name}
+                      onChange={(e) =>
+                        setContactBanner((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E0F0E5", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", }}
+                      placeholder="Nombre del negocio"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      style={{ fontSize: 11, fontWeight: 700, color: "#666", display: "block", marginBottom: 3, }}
+                    >
+                      DESCRIPCIÓN
+                    </label>
+                    <input
+                      value={contactBanner.sub}
+                      onChange={(e) =>
+                        setContactBanner((prev) => ({
+                          ...prev,
+                          sub: e.target.value,
+                        }))
+                      }
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E0F0E5", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", }}
+                      placeholder="Descripción del negocio"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      style={{ fontSize: 11, fontWeight: 700, color: "#666", display: "block", marginBottom: 3, }}
+                    >
+                      EMOJI
+                    </label>
+                    <input
+                      value={contactBanner.emoji}
+                      onChange={(e) =>
+                        setContactBanner((prev) => ({
+                          ...prev,
+                          emoji: e.target.value,
+                        }))
+                      }
+                      style={{ width: 60, padding: "8px 12px", borderRadius: 8, border: "1.5px solid #E0F0E5", fontSize: 20, fontFamily: "inherit", outline: "none", textAlign: "center", }}
+                      maxLength={4}
+                    />
+                  </div>
+
+                  {/* ── Editor de Logo ── */}
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: "#666", display: "block", marginBottom: 6 }}>LOGO DEL NEGOCIO</label>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      <div style={{ width: 72, height: 72, borderRadius: 14, border: "2px dashed #A0B8A8", background: "#F4FBF5", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+                        {contactBanner.logo
+                          ? <img src={contactBanner.logo} alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                          : <span style={{ fontSize: 28 }}>{contactBanner.emoji}</span>
+                        }
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        <label style={{ background: "#1A7A2E", color: "#fff", borderRadius: 10, padding: "7px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", display: "inline-block" }}>
+                          📁 Subir logo
+                          <input type="file" accept="image/*" style={{ display: "none" }}
+                            onChange={async (e) => {
+                              const file = e.target.files[0];
+                              if (!file) return;
+                              if (file.size > 5000000) { showToast("⚠️ La imagen debe pesar menos de 5MB"); return; }
+                              showToast("🔄 Comprimiendo imagen...");
+                              const compressed = await compressImage(file);
+                              setContactBanner(prev => ({ ...prev, logo: compressed }));
+                            }}
+                          />
+                        </label>
+                        {contactBanner.logo && (
+                          <button onClick={() => setContactBanner(prev => ({ ...prev, logo: null }))}
+                            style={{ background: "#FDECEA", color: "#CC1111", border: "none", borderRadius: 10, padding: "7px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                            🗑 Quitar logo
+                          </button>
+                        )}
+                        <div style={{ fontSize: 10, color: "#999", lineHeight: 1.4 }}>PNG, JPG · Máx 5MB (se comprime auto)<br/>Sin logo se muestra el emoji</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    {/* Paleta de emojis precargados — banner negocio */}
+                    <div style={{ marginTop: 8 }}>
+                      {[
+                        { label: "🏪 Negocio", items: ["🏪","🏬","🏡","🏘️","🗺️","📍","🔑","🚪","💡","🌿"] },
+                        { label: "🛍️ Productos", items: ["🛍️","🛒","🧺","🧴","🥤","🍫","🍭","🥐","🫙","🧃"] },
+                        { label: "🚚 Servicio", items: ["🚚","🛵","📦","💳","🤝","📲","☎️","💬","✅","⏰"] },
+                        { label: "🌟 Identidad", items: ["⭐","🌟","💚","🟢","🌈","🎈","🏅","🌺","🍋","🫶"] },
+                      ].map(group => (
+                        <div key={group.label} style={{ marginBottom: 8 }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#999", marginBottom: 4, letterSpacing: 0.5 }}>{group.label}</div>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                            {group.items.map(em => (
+                              <button
+                                key={em}
+                                onClick={() => setContactBanner(prev => ({ ...prev, emoji: em }))}
+                                title={em}
+                                style={{ width: 34, height: 34, fontSize: 19, border: contactBanner.emoji === em ? "2px solid #1A7A2E" : "1.5px solid #E8E8E8", borderRadius: 9, cursor: "pointer", background: contactBanner.emoji === em ? "#E8F5EC" : "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, transition: "all 0.12s", transform: contactBanner.emoji === em ? "scale(1.15)" : "scale(1)", }}
+                              >{em}</button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ORDERS TAB */}
         {adminTab === "pedidos" && (
@@ -7235,31 +7479,6 @@ _Maxikiosko Blanqui_`,
             </div>
           </div>
           <div style={{ fontSize: 40 }}>{banner.emoji}</div>
-        </div>
-      )}
-
-
-      {/* Banner Vacaciones */}
-      {vacaciones.activo && !search && (
-        <div style={{ background: "linear-gradient(135deg, #CC1111 0%, #8B0000 100%)", padding: "18px 20px", display: "flex", alignItems: "center", gap: 14, position: "relative", overflow: "hidden", }}>
-          {/* Fondo decorativo */}
-          <div style={{ position: "absolute", right: -20, top: -20, fontSize: 80, opacity: 0.12, transform: "rotate(-15deg)", pointerEvents: "none" }}>🏖️</div>
-          <div style={{ fontSize: 38, flexShrink: 0, filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>🏖️</div>
-          <div style={{ flex: 1, zIndex: 1 }}>
-            <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 15, letterSpacing: 0.5, textShadow: "0 1px 4px rgba(0,0,0,0.4)", marginBottom: 4, }}>
-              🔴 LOCAL CERRADO
-            </div>
-            <div style={{ color: "#fff", fontWeight: 700, fontSize: 13, lineHeight: 1.4, opacity: 0.95, }}>
-              {vacaciones.mensaje || "Estamos de vacaciones. ¡Volvemos pronto!"}
-            </div>
-            {vacaciones.desde && vacaciones.hasta && (
-              <div style={{ marginTop: 6, display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(255,255,255,0.15)", borderRadius: 20, padding: "4px 10px", }}>
-                <span style={{ fontSize: 11, color: "#FFD700", fontWeight: 800 }}>
-                  📅 {vacaciones.desde.split("-").reverse().join("/")} — {vacaciones.hasta.split("-").reverse().join("/")}
-                </span>
-              </div>
-            )}
-          </div>
         </div>
       )}
 
