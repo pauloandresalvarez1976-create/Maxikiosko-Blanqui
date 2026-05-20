@@ -813,7 +813,7 @@ function App() {
     showToast(`🛒 ${p.name} agregado`);
   };
 
-  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+  const cartCount = cart.reduce((s, i) => s + (i.byWeight ? 1 : i.qty), 0);
   const cartTotal = cart.reduce((s, i) => s + (i.byWeight ? Math.round(i.price * (i.grams || i.qty) / 1000) : i.price * i.qty), 0);
   const updateCartQty = (id, d) =>
     setCart((prev) =>
@@ -1224,7 +1224,7 @@ function App() {
       deliveryType,
       paymentMethod,
       fotoComprobante: fotoComprobante || null,
-      items: cart.map((i) => ({ id: i.id, name: i.name, emoji: i.emoji, price: i.price, qty: i.qty })),
+      items: cart.map((i) => ({ id: i.id, name: i.name, emoji: i.emoji, price: i.byWeight ? Math.round(i.price * (i.grams || 100) / 1000) : i.price, qty: i.byWeight ? 1 : i.qty, grams: i.byWeight ? (i.grams || 100) : undefined, byWeight: i.byWeight || false })),
       subtotal: cartTotal,
       shipping: 0,
       discountApplied: usedDiscount ? loyaltyDiscountAmount : 0,
@@ -1585,32 +1585,40 @@ _Maxikiosko Blanqui_`,
                   {item.emoji}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div
-                    style={{ fontWeight: 700, fontSize: 13, lineHeight: 1.3 }}
-                  >
+                  <div style={{ fontWeight: 700, fontSize: 13, lineHeight: 1.3 }}>
                     {item.name}
                   </div>
-                  <div
-                    style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 14 }}
-                  >
-                    {fmt(item.price)}
+                  <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 14 }}>
+                    {item.byWeight ? fmt(Math.round(item.price * (item.grams || 100) / 1000)) : fmt(item.price)}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <button
-                    onClick={() => updateCartQty(item.id, -1)}
-                    style={{ width: 26, height: 26, borderRadius: "50%", border: "2px solid #1A7A2E", background: "#fff", color: "#1A7A2E", fontWeight: 900, cursor: "pointer", fontSize: 15, }}
+                    onClick={() => {
+                      if (item.byWeight) {
+                        const newGrams = Math.max(100, (item.grams || 100) - 50);
+                        setCart(prev => prev.map(i => i.id === item.id ? { ...i, grams: newGrams, qty: newGrams } : i));
+                      } else {
+                        updateCartQty(item.id, -1);
+                      }
+                    }}
+                    style={{ width: 26, height: 26, borderRadius: "50%", border: "2px solid #1A7A2E", background: "#fff", color: "#1A7A2E", fontWeight: 900, cursor: "pointer", fontSize: 15 }}
                   >
                     −
                   </button>
-                  <span
-                    style={{ fontWeight: 800, fontSize: 14, minWidth: 20, textAlign: "center", }}
-                  >
-                    {item.qty}
+                  <span style={{ fontWeight: 800, fontSize: 14, minWidth: 28, textAlign: "center" }}>
+                    {item.byWeight ? `${item.grams || 100}g` : item.qty}
                   </span>
                   <button
-                    onClick={() => updateCartQty(item.id, 1)}
-                    style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "#1A7A2E", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15, }}
+                    onClick={() => {
+                      if (item.byWeight) {
+                        const newGrams = (item.grams || 100) + 50;
+                        setCart(prev => prev.map(i => i.id === item.id ? { ...i, grams: newGrams, qty: newGrams } : i));
+                      } else {
+                        updateCartQty(item.id, 1);
+                      }
+                    }}
+                    style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "#1A7A2E", color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 15 }}
                   >
                     +
                   </button>
