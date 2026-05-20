@@ -4,7 +4,8 @@ exports.handler = async (event) => {
   }
 
   try {
-    const { items, orderId, clientName } = JSON.parse(event.body);
+    const { items, orderId, clientName, mpAccessToken } = JSON.parse(event.body);
+    const token = mpAccessToken || process.env.MP_ACCESS_TOKEN;
 
     const total = items.reduce((s, i) => s + i.price * i.qty, 0);
 
@@ -31,7 +32,7 @@ exports.handler = async (event) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(body),
     });

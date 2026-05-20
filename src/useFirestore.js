@@ -2,8 +2,6 @@ import { db } from "./firebase";
 import {
   doc,
   setDoc,
-  updateDoc,
-  deleteField,
   onSnapshot,
   getDoc,
 } from "firebase/firestore";
@@ -35,33 +33,21 @@ const FIREBASE_KEYS = [
   "adminEmail",
   "transferenciaConfig",
   "fcmTokens",
+  "mpAccessToken",
 ];
 
 // ID fijo del documento de la tienda en Firestore
 const STORE_ID = "maxikioskoblanqui";
 
-// Claves que deben reemplazar el valor completo (sin merge) para permitir eliminaciones
-const REPLACE_KEYS = ["customers", "products", "orders", "banners"];
-
 // Guardar un dato en Firestore
 export async function saveToFirestore(key, value) {
   if (!FIREBASE_KEYS.includes(key)) return;
   try {
-    if (REPLACE_KEYS.includes(key)) {
-      // Sin merge: reemplaza el campo completo para que las eliminaciones funcionen
-      const snap = await getDoc(doc(db, "store", STORE_ID));
-      const current = snap.exists() ? snap.data() : {};
-      await setDoc(
-        doc(db, "store", STORE_ID),
-        { ...current, [key]: value }
-      );
-    } else {
-      await setDoc(
-        doc(db, "store", STORE_ID),
-        { [key]: value },
-        { merge: true }
-      );
-    }
+    await setDoc(
+      doc(db, "store", STORE_ID),
+      { [key]: value },
+      { merge: true }
+    );
   } catch (e) {
     console.warn("Firebase write error:", e);
   }
@@ -88,18 +74,6 @@ export function subscribeToFirestore(callback) {
     },
     (error) => console.warn("Firebase snapshot error:", error)
   );
-}
-
-// Eliminar un cliente específico de Firestore usando dot notation
-export async function deleteCustomerFromFirestore(customerKey) {
-  try {
-    await updateDoc(
-      doc(db, "store", STORE_ID),
-      { [`customers.${customerKey}`]: deleteField() }
-    );
-  } catch (e) {
-    console.warn("Firebase delete customer error:", e);
-  }
 }
 
 export { FIREBASE_KEYS };

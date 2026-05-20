@@ -226,6 +226,7 @@ function App() {
   const [adminEmailEditMode, setAdminEmailEditMode] = useState(false);
   const [efectivoEnabled, setEfectivoEnabled] = usePersist("efectivoEnabled", true);
   const [darkMode, setDarkMode] = usePersist("darkMode", false);
+  const [mpAccessToken, setMpAccessToken] = usePersist("mpAccessToken", "");
   const [shopPage, setShopPage] = useState(1);
   const [adminPage, setAdminPage] = useState(1);
   const [selectedProductIds, setSelectedProductIds] = useState(new Set());
@@ -549,6 +550,7 @@ function App() {
       if (data.loyaltyEnabled !== undefined) update(setLoyaltyEnabled, "loyaltyEnabled", data.loyaltyEnabled);
       if (data.loyaltyMode) update(setLoyaltyMode, "loyaltyMode", data.loyaltyMode);
       if (data.cashbackConfig) update(setCashbackConfig, "cashbackConfig", data.cashbackConfig);
+      if (data.mpAccessToken !== undefined) { setMpAccessToken(data.mpAccessToken); localStorage.setItem("mk_mpAccessToken", JSON.stringify(data.mpAccessToken)); }
       if (data.deliveryETA) update(setDeliveryETA, "deliveryETA", data.deliveryETA);
     });
 
@@ -563,6 +565,7 @@ function App() {
       if (data.mensajeDelDia) update(setMensajeDelDia, "mensajeDelDia", data.mensajeDelDia);
       if (data.transferenciaConfig) update(setTransferenciaConfig, "transferenciaConfig", data.transferenciaConfig);
       if (data.cashbackConfig) update(setCashbackConfig, "cashbackConfig", data.cashbackConfig);
+      if (data.mpAccessToken !== undefined) { setMpAccessToken(data.mpAccessToken); localStorage.setItem("mk_mpAccessToken", JSON.stringify(data.mpAccessToken)); }
       if (data.loyaltyEnabled !== undefined) update(setLoyaltyEnabled, "loyaltyEnabled", data.loyaltyEnabled);
       if (data.loyaltyMode) update(setLoyaltyMode, "loyaltyMode", data.loyaltyMode);
       if (data.mantenimiento !== undefined) {
@@ -1052,6 +1055,7 @@ function App() {
           items: cart.map(i => ({ id: i.id, name: i.name, qty: i.byWeight ? 1 : i.qty, price: i.byWeight ? Math.round(i.price * (i.grams || 100) / 1000) : i.price })),
           orderId: Date.now(),
           clientName: clientName.trim(),
+          mpAccessToken: mpAccessToken || "",
         }),
       });
       const data = await res.json();
@@ -5458,6 +5462,57 @@ _Maxikiosko Blanqui_`,
                 </div>
               </div>
             </div>
+
+            {/* ── MERCADOPAGO TOKEN ── */}
+            {(() => {
+              const [mpDraft, setMpDraft] = React.useState(mpAccessToken || "");
+              const [mpSaved, setMpSaved] = React.useState(false);
+              const [mpShow, setMpShow] = React.useState(false);
+              return (
+                <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #009EE3" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                    <span style={{ fontSize: 22 }}>💳</span>
+                    <div style={{ fontWeight: 900, fontSize: 15, color: "#1A2E1A" }}>MercadoPago — Access Token</div>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#666", marginBottom: 12, lineHeight: 1.5 }}>
+                    Pegá el Access Token de producción de tu cuenta de MercadoPago. Se guarda encriptado en Firebase y nunca es visible para los clientes.
+                  </div>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+                    <input
+                      type={mpShow ? "text" : "password"}
+                      value={mpDraft}
+                      onChange={e => { setMpDraft(e.target.value); setMpSaved(false); }}
+                      placeholder="APP_USR-..."
+                      style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: "2px solid #009EE3", fontSize: 13, fontFamily: "monospace", outline: "none", color: "#1A2E1A", boxSizing: "border-box" }}
+                    />
+                    <button onClick={() => setMpShow(v => !v)} style={{ background: "#F0F8FF", border: "2px solid #009EE3", borderRadius: 10, padding: "10px 12px", cursor: "pointer", fontSize: 16 }}>
+                      {mpShow ? "🙈" : "👁️"}
+                    </button>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={() => { setMpAccessToken(mpDraft.trim()); saveToFirestore("mpAccessToken", mpDraft.trim()); setMpSaved(true); showToast("✅ Token de MercadoPago guardado"); }}
+                      style={{ flex: 1, background: "#009EE3", color: "#fff", border: "none", borderRadius: 10, padding: "10px 0", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                      {mpSaved ? "✅ Guardado" : "💾 Guardar token"}
+                    </button>
+                    {mpAccessToken && (
+                      <button
+                        onClick={() => { setMpDraft(""); setMpAccessToken(""); saveToFirestore("mpAccessToken", ""); setMpSaved(false); showToast("🗑️ Token eliminado"); }}
+                        style={{ background: "#FDECEA", color: "#CC1111", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
+                  {mpAccessToken && (
+                    <div style={{ fontSize: 11, color: "#1A7A2E", marginTop: 8, fontWeight: 700 }}>
+                      ✅ Token activo: {mpAccessToken.slice(0, 12)}...
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* CORREO DEL ADMIN */}
             <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #C7D5F8" }}>
