@@ -2,6 +2,8 @@ import { db } from "./firebase";
 import {
   doc,
   setDoc,
+  updateDoc,
+  deleteField,
   onSnapshot,
   getDoc,
 } from "firebase/firestore";
@@ -74,6 +76,18 @@ export function subscribeToFirestore(callback) {
     },
     (error) => console.warn("Firebase snapshot error:", error)
   );
+}
+
+// Eliminar un cliente específico de Firestore usando dot notation
+export async function deleteCustomerFromFirestore(customerKey) {
+  try {
+    await updateDoc(
+      doc(db, "store", STORE_ID),
+      { [`customers.${customerKey}`]: deleteField() }
+    );
+  } catch (e) {
+    console.warn("Firebase delete customer error:", e);
+  }
 }
 
 export { FIREBASE_KEYS };
