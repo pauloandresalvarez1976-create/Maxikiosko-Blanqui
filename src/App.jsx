@@ -1049,7 +1049,7 @@ function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: cart.map(i => ({ id: i.id, name: i.name, qty: i.qty, price: i.price })),
+          items: cart.map(i => ({ id: i.id, name: i.name, qty: i.byWeight ? 1 : i.qty, price: i.byWeight ? Math.round(i.price * (i.grams || 100) / 1000) : i.price })),
           orderId: Date.now(),
           clientName: clientName.trim(),
         }),
@@ -1119,7 +1119,7 @@ function App() {
         prev.map((p) => {
           const cartItem = cart.find((c) => c.id === p.id);
           if (cartItem) {
-            return { ...p, stock: Math.max(0, (p.stock || 0) - cartItem.qty) };
+            return { ...p, stock: cartItem.byWeight ? p.stock : Math.max(0, (p.stock || 0) - cartItem.qty) };
           }
           return p;
         })
@@ -1241,7 +1241,7 @@ function App() {
       prev.map((p) => {
         const cartItem = cart.find((c) => c.id === p.id);
         if (cartItem) {
-          return { ...p, stock: Math.max(0, (p.stock || 0) - cartItem.qty) };
+          return { ...p, stock: cartItem.byWeight ? p.stock : Math.max(0, (p.stock || 0) - cartItem.qty) };
         }
         return p;
       })
