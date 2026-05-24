@@ -1231,7 +1231,7 @@ function App() {
       deliveryType,
       paymentMethod,
       fotoComprobante: fotoComprobante || null,
-      items: cart.map((i) => ({ id: i.id, name: i.name, emoji: i.emoji, price: i.byWeight ? Math.round(i.price * (i.grams || 100) / 1000) : i.price, qty: i.byWeight ? 1 : i.qty, grams: i.byWeight ? (i.grams || 100) : undefined, byWeight: i.byWeight || false })),
+      items: cart.map((i) => ({ id: i.id, name: i.name, emoji: i.emoji, price: i.byWeight ? Math.round(i.price * (i.grams || 100) / 1000) : i.price, qty: i.byWeight ? 1 : i.qty, grams: i.byWeight ? (i.grams || 100) : null, byWeight: i.byWeight || false })),
       subtotal: cartTotal,
       shipping: 0,
       discountApplied: usedDiscount ? loyaltyDiscountAmount : 0,
