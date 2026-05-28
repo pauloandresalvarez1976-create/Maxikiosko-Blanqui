@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { saveToFirestore, loadFromFirestore, subscribeToFirestore, deleteCustomerFromFirestore, FIREBASE_KEYS } from "./useFirestore";
+import { saveToFirestore, loadFromFirestore, subscribeToFirestore, deleteCustomerFromFirestore, addOrderToFirestore, FIREBASE_KEYS } from "./useFirestore";
 import { requestFCMToken, onForegroundMessage, uploadProductPhoto, deleteProductPhoto } from "./firebase";
 import RAW_PRODUCTS from "./products.json";
 import EMOJI_MAP from "./emojis.json";
@@ -1240,6 +1240,7 @@ function App() {
       statusTimestamps: { nuevo: new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) },
     };
     setOrders((prev) => [newOrder, ...prev]);
+    addOrderToFirestore(newOrder);
     setActiveOrderId(newOrder.id);
     setLastCreatedOrder(newOrder);
 

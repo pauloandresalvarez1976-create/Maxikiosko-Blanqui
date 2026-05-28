@@ -6,6 +6,7 @@ import {
   deleteField,
   onSnapshot,
   getDoc,
+  arrayUnion,
 } from "firebase/firestore";
 
 // Claves que se sincronizan con Firebase (las más importantes)
@@ -44,6 +45,8 @@ const STORE_ID = "maxikioskoblanqui";
 // Guardar un dato en Firestore
 export async function saveToFirestore(key, value) {
   if (!FIREBASE_KEYS.includes(key)) return;
+  // Los pedidos nunca se sobreescriben completos desde aquí
+  if (key === "orders") return;
   try {
     await setDoc(
       doc(db, "store", STORE_ID),
@@ -52,6 +55,26 @@ export async function saveToFirestore(key, value) {
     );
   } catch (e) {
     console.warn("Firebase write error:", e);
+  }
+}
+
+// Agregar UN solo pedido nuevo a Firebase (sin sobreescribir los demás)
+export async function addOrderToFirestore(newOrder) {
+  try {
+    await updateDoc(doc(db, "store", STORE_ID), {
+      orders: arrayUnion(newOrder),
+    });
+  } catch (e) {
+    // Si el documento no existe todavía, lo creamos
+    try {
+      await setDoc(
+        doc(db, "store", STORE_ID),
+        { orders: [newOrder] },
+        { merge: true }
+      );
+    } catch (e2) {
+      console.warn("Firebase addOrder error:", e2);
+    }
   }
 }
 
