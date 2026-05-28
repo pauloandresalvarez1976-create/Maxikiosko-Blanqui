@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { saveToFirestore, loadFromFirestore, subscribeToFirestore, deleteCustomerFromFirestore, addOrderToFirestore, FIREBASE_KEYS } from "./useFirestore";
+import { saveToFirestore, loadFromFirestore, subscribeToFirestore, deleteCustomerFromFirestore, addOrderToFirestore, updateOrderInFirestore, FIREBASE_KEYS } from "./useFirestore";
 import { requestFCMToken, onForegroundMessage, uploadProductPhoto, deleteProductPhoto } from "./firebase";
 import RAW_PRODUCTS from "./products.json";
 import EMOJI_MAP from "./emojis.json";
@@ -1320,6 +1320,10 @@ function App() {
       const statusTimestamps = { ...(o.statusTimestamps || {}), [status]: timeNow };
       return { ...o, status, statusTimestamps };
     }));
+
+    // Guardar cambio de estado en Firebase
+    const statusTimestampsNew = { ...(orders.find(o => o.id === id)?.statusTimestamps || {}), [status]: timeNow };
+    updateOrderInFirestore(id, { status, statusTimestamps: statusTimestampsNew });
 
     // Sonido de notificación para cambios importantes
     if (status === "en_proceso" || status === "listo" || status === "entregado") {

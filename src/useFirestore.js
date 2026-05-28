@@ -42,10 +42,9 @@ const FIREBASE_KEYS = [
 // ID fijo del documento de la tienda en Firestore
 const STORE_ID = "maxikioskoblanqui";
 
-// Guardar un dato en Firestore
+// Guardar un dato en Firestore (orders nunca se sobreescribe completo)
 export async function saveToFirestore(key, value) {
   if (!FIREBASE_KEYS.includes(key)) return;
-  // Los pedidos nunca se sobreescriben completos desde aquí
   if (key === "orders") return;
   try {
     await setDoc(
@@ -65,7 +64,6 @@ export async function addOrderToFirestore(newOrder) {
       orders: arrayUnion(newOrder),
     });
   } catch (e) {
-    // Si el documento no existe todavía, lo creamos
     try {
       await setDoc(
         doc(db, "store", STORE_ID),
@@ -75,6 +73,22 @@ export async function addOrderToFirestore(newOrder) {
     } catch (e2) {
       console.warn("Firebase addOrder error:", e2);
     }
+  }
+}
+
+// Actualizar el estado de un pedido específico en Firebase
+export async function updateOrderInFirestore(orderId, updatedFields) {
+  try {
+    const ref = doc(db, "store", STORE_ID);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+    const orders = snap.data().orders || [];
+    const updatedOrders = orders.map((o) =>
+      o.id === orderId ? { ...o, ...updatedFields } : o
+    );
+    await updateDoc(ref, { orders: updatedOrders });
+  } catch (e) {
+    console.warn("Firebase updateOrder error:", e);
   }
 }
 
