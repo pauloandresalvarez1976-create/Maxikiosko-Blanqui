@@ -809,7 +809,7 @@ function App() {
     if (p.offerDiscount !== null && p.offerDiscount !== undefined && p.offerDiscount !== "2x1") {
       effectivePrice = Math.round(p.price * (1 - p.offerDiscount / 100));
     }
-    const item = { ...p, price: effectivePrice, originalPrice: p.offerDiscount && p.offerDiscount !== "2x1" ? p.price : null };
+    const item = { ...p, price: effectivePrice };
     setCart((prev) => {
       const ex = prev.find((i) => i.id === p.id);
       if (ex)
@@ -1596,20 +1596,8 @@ _Maxikiosko Blanqui_`,
                   <div style={{ fontWeight: 700, fontSize: 13, lineHeight: 1.3 }}>
                     {item.name}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                    {item.originalPrice && (
-                      <span style={{ color: "#999", fontWeight: 600, fontSize: 12, textDecoration: "line-through" }}>
-                        {fmt(item.originalPrice)}
-                      </span>
-                    )}
-                    <span style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 14 }}>
-                      {item.byWeight ? fmt(Math.round(item.price * (item.grams || 100) / 1000)) : fmt(item.price)}
-                    </span>
-                    {item.originalPrice && (
-                      <span style={{ background: "#E53935", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 4, padding: "1px 5px" }}>
-                        -{item.offerDiscount}%
-                      </span>
-                    )}
+                  <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 14 }}>
+                    {item.byWeight ? fmt(Math.round(item.price * (item.grams || 100) / 1000)) : fmt(item.price)}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -7891,10 +7879,18 @@ _Maxikiosko Blanqui_`,
                     ⚠️ Pocas unidades
                   </span>
                 )}
-                <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 15, marginTop: "auto" }}>
-                  {p.byWeight ? (
-                    <span>{fmt(p.price)}<span style={{ fontSize: 10, fontWeight: 600, color: "#666" }}>/kg</span></span>
-                  ) : fmt(p.price)}
+                <div style={{ marginTop: "auto" }}>
+                  {p.offerDiscount && p.offerDiscount !== "2x1" && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+                      <span style={{ fontSize: 11, color: "#999", textDecoration: "line-through", fontWeight: 600 }}>{fmt(p.price)}</span>
+                      <span style={{ background: "#E53935", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 4, padding: "1px 5px" }}>-{p.offerDiscount}%</span>
+                    </div>
+                  )}
+                  <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 15 }}>
+                    {p.byWeight ? (
+                      <span>{fmt(p.price)}<span style={{ fontSize: 10, fontWeight: 600, color: "#666" }}>/kg</span></span>
+                    ) : p.offerDiscount && p.offerDiscount !== "2x1" ? fmt(Math.round(p.price * (1 - p.offerDiscount / 100))) : fmt(p.price)}
+                  </div>
                 </div>
                 {p.byWeight ? (
                   (() => {
