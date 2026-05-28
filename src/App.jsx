@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { saveToFirestore, loadFromFirestore, subscribeToFirestore, deleteCustomerFromFirestore, addOrderToFirestore, updateOrderInFirestore, FIREBASE_KEYS } from "./useFirestore";
+import { saveToFirestore, loadFromFirestore, subscribeToFirestore, deleteCustomerFromFirestore, addOrderToFirestore, FIREBASE_KEYS } from "./useFirestore";
 import { requestFCMToken, onForegroundMessage, uploadProductPhoto, deleteProductPhoto } from "./firebase";
 import RAW_PRODUCTS from "./products.json";
 import EMOJI_MAP from "./emojis.json";
@@ -809,7 +809,7 @@ function App() {
     if (p.offerDiscount !== null && p.offerDiscount !== undefined && p.offerDiscount !== "2x1") {
       effectivePrice = Math.round(p.price * (1 - p.offerDiscount / 100));
     }
-    const item = { ...p, price: effectivePrice };
+    const item = { ...p, price: effectivePrice, originalPrice: p.offerDiscount && p.offerDiscount !== "2x1" ? p.price : null };
     setCart((prev) => {
       const ex = prev.find((i) => i.id === p.id);
       if (ex)
@@ -1321,10 +1321,6 @@ function App() {
       return { ...o, status, statusTimestamps };
     }));
 
-    // Guardar cambio de estado en Firebase
-    const statusTimestampsNew = { ...(orders.find(o => o.id === id)?.statusTimestamps || {}), [status]: timeNow };
-    updateOrderInFirestore(id, { status, statusTimestamps: statusTimestampsNew });
-
     // Sonido de notificación para cambios importantes
     if (status === "en_proceso" || status === "listo" || status === "entregado") {
       playNotification();
@@ -1600,8 +1596,20 @@ _Maxikiosko Blanqui_`,
                   <div style={{ fontWeight: 700, fontSize: 13, lineHeight: 1.3 }}>
                     {item.name}
                   </div>
-                  <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 14 }}>
-                    {item.byWeight ? fmt(Math.round(item.price * (item.grams || 100) / 1000)) : fmt(item.price)}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    {item.originalPrice && (
+                      <span style={{ color: "#999", fontWeight: 600, fontSize: 12, textDecoration: "line-through" }}>
+                        {fmt(item.originalPrice)}
+                      </span>
+                    )}
+                    <span style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 14 }}>
+                      {item.byWeight ? fmt(Math.round(item.price * (item.grams || 100) / 1000)) : fmt(item.price)}
+                    </span>
+                    {item.originalPrice && (
+                      <span style={{ background: "#E53935", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 4, padding: "1px 5px" }}>
+                        -{item.offerDiscount}%
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
