@@ -5086,20 +5086,31 @@ _Maxikiosko Blanqui_`,
                     </div>
                   </div>
                   {/* CASHBACK */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: editProduct.cashback !== false ? "#F0FAF2" : "#FFF3E0", border: `1.5px solid ${editProduct.cashback !== false ? "#1A7A2E" : "#FFB300"}`, borderRadius: 10, padding: "10px 14px", marginTop: 14 }}>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: editProduct.cashback !== false ? "#1A7A2E" : "#E65100" }}>💰 ACUMULA CASHBACK</div>
-                      <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>
-                        {editProduct.cashback !== false ? "Este producto suma cashback al cliente" : "Excluido del programa de cashback"}
+                  {(() => {
+                    const tieneOferta = editProduct.offerDiscount !== null && editProduct.offerDiscount !== undefined;
+                    const cashbackActivo = !tieneOferta && editProduct.cashback !== false;
+                    const bgColor = tieneOferta ? "#F5F5F5" : cashbackActivo ? "#F0FAF2" : "#FFF3E0";
+                    const borderColor = tieneOferta ? "#DDD" : cashbackActivo ? "#1A7A2E" : "#FFB300";
+                    const textColor = tieneOferta ? "#AAA" : cashbackActivo ? "#1A7A2E" : "#E65100";
+                    const toggleBg = cashbackActivo ? "#1A7A2E" : "#CCC";
+                    const toggleLeft = cashbackActivo ? 23 : 3;
+                    const label = tieneOferta ? "⛔ EXCLUIDO POR OFERTA DEL DÍA" : "💰 ACUMULA CASHBACK";
+                    const sublabel = tieneOferta ? "Los productos en oferta no acumulan cashback" : cashbackActivo ? "Este producto suma cashback al cliente" : "Excluido del programa de cashback";
+                    return (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: bgColor, border: `1.5px solid ${borderColor}`, borderRadius: 10, padding: "10px 14px", marginTop: 14, opacity: tieneOferta ? 0.7 : 1 }}>
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 800, color: textColor }}>{label}</div>
+                          <div style={{ fontSize: 10, color: tieneOferta ? "#AAA" : "#888", marginTop: 2 }}>{sublabel}</div>
+                        </div>
+                        <div
+                          onClick={() => { if (!tieneOferta) setEditProduct(prev => ({ ...prev, cashback: prev.cashback === false ? true : false })); }}
+                          style={{ width: 44, height: 24, borderRadius: 12, background: toggleBg, cursor: tieneOferta ? "not-allowed" : "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
+                        >
+                          <div style={{ position: "absolute", top: 3, left: toggleLeft, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
+                        </div>
                       </div>
-                    </div>
-                    <div
-                      onClick={() => setEditProduct(prev => ({ ...prev, cashback: prev.cashback === false ? true : false }))}
-                      style={{ width: 44, height: 24, borderRadius: 12, background: editProduct.cashback !== false ? "#1A7A2E" : "#CCC", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
-                    >
-                      <div style={{ position: "absolute", top: 3, left: editProduct.cashback !== false ? 23 : 3, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
-                    </div>
-                  </div>
+                    );
+                  })()}
                   <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
                     <button
                       onClick={() => setEditProduct(null)}
