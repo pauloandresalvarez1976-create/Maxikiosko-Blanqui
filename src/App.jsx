@@ -809,7 +809,7 @@ function App() {
     if (p.offerDiscount !== null && p.offerDiscount !== undefined && p.offerDiscount !== "2x1") {
       effectivePrice = Math.round(p.price * (1 - p.offerDiscount / 100));
     }
-    const item = { ...p, price: effectivePrice };
+    const item = { ...p, price: effectivePrice, originalPrice: (p.offerDiscount && p.offerDiscount !== "2x1") ? p.price : null };
     setCart((prev) => {
       const ex = prev.find((i) => i.id === p.id);
       if (ex)
