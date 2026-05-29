@@ -24,6 +24,7 @@ const INITIAL_PRODUCTS = RAW_PRODUCTS.map((p) => ({
   byWeight: false,     // true = se vende por peso (mínimo 100g, saltos de 50g)
   offerDiscount: null, // null = sin oferta, número 5-100 = % descuento, "2x1" = 2x1
   customPhoto: null,   // base64 o URL personalizada subida por el admin
+  cashback: true,      // true = acumula cashback, false = excluido del cashback
 }));
 
 // ALL_CATEGORIES is now computed dynamically from products state (see useMemo inside component)
@@ -1185,7 +1186,14 @@ function App() {
           newPendingDiscountPct = existing?.pendingDiscountPct || 10;
         }
       } else if (loyaltyMode === "cashback") {
-        const earned = existing?.cashbackDisabled ? 0 : Math.round(cartTotal * CASHBACK_RATE);
+        // Solo acumula cashback en productos que no son oferta del día y tienen cashback activo
+        const cashbackBase = existing?.cashbackDisabled ? 0 : cart.reduce((s, i) => {
+          if (i.cashback === false) return s; // excluido manualmente
+          if (i.offerDiscount !== null && i.offerDiscount !== undefined) return s; // oferta del día excluida
+          const itemTotal = i.byWeight ? Math.round(i.price * (i.grams || i.qty) / 1000) : i.price * i.qty;
+          return s + itemTotal;
+        }, 0);
+        const earned = Math.round(cashbackBase * CASHBACK_RATE);
         // Verificar vencimiento — si la última compra fue hace más de X días, resetear
         const diasVencimiento = cashbackConfig.vencimientoDias || 30;
         const ultimaCompra = existing?.ultimaCompra || null;
@@ -4877,7 +4885,7 @@ _Maxikiosko Blanqui_`,
               setProducts((prev) =>
                 prev.map((p) =>
                   p.id === editProduct.id
-                    ? { ...p, name: editProduct.name?.trim() || p.name, price: newPrice, stock: newStock, offerDiscount: editProduct.offerDiscount ?? null, customPhoto: finalPhoto, byWeight: editProduct.byWeight ?? false }
+                    ? { ...p, name: editProduct.name?.trim() || p.name, price: newPrice, stock: newStock, offerDiscount: editProduct.offerDiscount ?? null, customPhoto: finalPhoto, byWeight: editProduct.byWeight ?? false, cashback: editProduct.cashback !== false }
                     : p
                 )
               );
@@ -5075,6 +5083,22 @@ _Maxikiosko Blanqui_`,
                           }
                         </div>
                       )}
+                    </div>
+                  </div>
+                  </div>
+                  {/* CASHBACK */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: editProduct.cashback !== false ? "#F0FAF2" : "#FFF3E0", border: `1.5px solid ${editProduct.cashback !== false ? "#1A7A2E" : "#FFB300"}`, borderRadius: 10, padding: "10px 14px", marginTop: 14 }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color: editProduct.cashback !== false ? "#1A7A2E" : "#E65100" }}>💰 ACUMULA CASHBACK</div>
+                      <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>
+                        {editProduct.cashback !== false ? "Este producto suma cashback al cliente" : "Excluido del programa de cashback"}
+                      </div>
+                    </div>
+                    <div
+                      onClick={() => setEditProduct(prev => ({ ...prev, cashback: prev.cashback === false ? true : false }))}
+                      style={{ width: 44, height: 24, borderRadius: 12, background: editProduct.cashback !== false ? "#1A7A2E" : "#CCC", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
+                    >
+                      <div style={{ position: "absolute", top: 3, left: editProduct.cashback !== false ? 23 : 3, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
