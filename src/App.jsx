@@ -530,7 +530,7 @@ function App() {
         localStorage.setItem("mk_ordersResetAt", JSON.stringify(data.ordersResetAt));
       }
       if (data.orders) update(setOrders, "orders", data.orders);
-      if (data.products) update(setProducts, "products", data.products);
+      if (data.products) update(setProducts, "products", data.products.map(p => ({ ...p, cashback: p.cashback === false ? false : true })));
       if (data.customers) update(setCustomers, "customers", data.customers);
       if (data.horarios) update(setHorarios, "horarios", data.horarios);
       if (data.vacaciones) update(setVacaciones, "vacaciones", data.vacaciones);
@@ -561,7 +561,7 @@ function App() {
     // Listener en tiempo real
     const unsubscribe = subscribeToFirestore((data) => {
       if (data.orders) update(setOrders, "orders", data.orders);
-      if (data.products) update(setProducts, "products", data.products);
+      if (data.products) update(setProducts, "products", data.products.map(p => ({ ...p, cashback: p.cashback === false ? false : true })));
       if (data.customers) update(setCustomers, "customers", data.customers);
       if (data.horarios) update(setHorarios, "horarios", data.horarios);
       if (data.vacaciones) update(setVacaciones, "vacaciones", data.vacaciones);
@@ -4787,7 +4787,7 @@ _Maxikiosko Blanqui_`,
                         offerDiscount: p.offerDiscount ?? null,
                         customPhoto: p.customPhoto ?? null,
                         byWeight: p.byWeight ?? false,
-                        cashback: p.cashback !== false,
+                        cashback: p.cashback === false ? false : true,
                       })
                     }
                     style={{ background: "#EEF7FF", border: "none", borderRadius: 8, padding: "6px 9px", fontSize: 13, cursor: "pointer", color: "#1565C0", fontWeight: 800, flexShrink: 0, }}
