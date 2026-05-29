@@ -1589,15 +1589,30 @@ _Maxikiosko Blanqui_`,
                 key={item.id}
                 style={{ background: "#fff", margin: "10px 14px", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, boxShadow: "0 1px 6px rgba(0,0,0,0.07)", }}
               >
-                <div style={{ fontSize: 28, width: 36, textAlign: "center" }}>
-                  {item.emoji}
+                <div style={{ width: 44, height: 44, borderRadius: 10, overflow: "hidden", flexShrink: 0, background: "#F5F5F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {item.customPhoto
+                    ? <img src={item.customPhoto} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : <span style={{ fontSize: 26 }}>{item.emoji}</span>
+                  }
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: 13, lineHeight: 1.3 }}>
                     {item.name}
                   </div>
-                  <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 14 }}>
-                    {item.byWeight ? fmt(Math.round(item.price * (item.grams || 100) / 1000)) : fmt(item.price)}
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+                    {item.originalPrice && (
+                      <span style={{ color: "#999", fontWeight: 600, fontSize: 11, textDecoration: "line-through" }}>
+                        {fmt(item.originalPrice)}
+                      </span>
+                    )}
+                    <span style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 14 }}>
+                      {item.byWeight ? fmt(Math.round(item.price * (item.grams || 100) / 1000)) : fmt(item.price)}
+                    </span>
+                    {item.originalPrice && (
+                      <span style={{ background: "#E53935", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 4, padding: "1px 5px" }}>
+                        -{item.offerDiscount}%
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -7879,18 +7894,10 @@ _Maxikiosko Blanqui_`,
                     ⚠️ Pocas unidades
                   </span>
                 )}
-                <div style={{ marginTop: "auto" }}>
-                  {p.offerDiscount && p.offerDiscount !== "2x1" && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
-                      <span style={{ fontSize: 11, color: "#999", textDecoration: "line-through", fontWeight: 600 }}>{fmt(p.price)}</span>
-                      <span style={{ background: "#E53935", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 4, padding: "1px 5px" }}>-{p.offerDiscount}%</span>
-                    </div>
-                  )}
-                  <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 15 }}>
-                    {p.byWeight ? (
-                      <span>{fmt(p.price)}<span style={{ fontSize: 10, fontWeight: 600, color: "#666" }}>/kg</span></span>
-                    ) : p.offerDiscount && p.offerDiscount !== "2x1" ? fmt(Math.round(p.price * (1 - p.offerDiscount / 100))) : fmt(p.price)}
-                  </div>
+                <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 15, marginTop: "auto" }}>
+                  {p.byWeight ? (
+                    <span>{fmt(p.price)}<span style={{ fontSize: 10, fontWeight: 600, color: "#666" }}>/kg</span></span>
+                  ) : fmt(p.price)}
                 </div>
                 {p.byWeight ? (
                   (() => {
