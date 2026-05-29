@@ -7894,10 +7894,20 @@ _Maxikiosko Blanqui_`,
                     ⚠️ Pocas unidades
                   </span>
                 )}
-                <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 15, marginTop: "auto" }}>
-                  {p.byWeight ? (
-                    <span>{fmt(p.price)}<span style={{ fontSize: 10, fontWeight: 600, color: "#666" }}>/kg</span></span>
-                  ) : fmt(p.price)}
+                <div style={{ marginTop: "auto" }}>
+                  {p.offerDiscount && p.offerDiscount !== "2x1" && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+                      <span style={{ fontSize: 11, color: "#999", textDecoration: "line-through", fontWeight: 600 }}>{fmt(p.price)}</span>
+                      <span style={{ background: "#E53935", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 4, padding: "1px 5px" }}>-{p.offerDiscount}%</span>
+                    </div>
+                  )}
+                  <div style={{ color: "#1A7A2E", fontWeight: 900, fontSize: 15 }}>
+                    {p.byWeight ? (
+                      <span>{fmt(p.price)}<span style={{ fontSize: 10, fontWeight: 600, color: "#666" }}>/kg</span></span>
+                    ) : p.offerDiscount && p.offerDiscount !== "2x1"
+                      ? fmt(Math.round(p.price * (1 - p.offerDiscount / 100)))
+                      : fmt(p.price)}
+                  </div>
                 </div>
                 {p.byWeight ? (
                   (() => {
