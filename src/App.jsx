@@ -4787,6 +4787,7 @@ _Maxikiosko Blanqui_`,
                         offerDiscount: p.offerDiscount ?? null,
                         customPhoto: p.customPhoto ?? null,
                         byWeight: p.byWeight ?? false,
+                        cashback: p.cashback !== false,
                       })
                     }
                     style={{ background: "#EEF7FF", border: "none", borderRadius: 8, padding: "6px 9px", fontSize: 13, cursor: "pointer", color: "#1565C0", fontWeight: 800, flexShrink: 0, }}
