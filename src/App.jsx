@@ -5085,7 +5085,6 @@ _Maxikiosko Blanqui_`,
                       )}
                     </div>
                   </div>
-                  </div>
                   {/* CASHBACK */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: editProduct.cashback !== false ? "#F0FAF2" : "#FFF3E0", border: `1.5px solid ${editProduct.cashback !== false ? "#1A7A2E" : "#FFB300"}`, borderRadius: 10, padding: "10px 14px", marginTop: 14 }}>
                     <div>
