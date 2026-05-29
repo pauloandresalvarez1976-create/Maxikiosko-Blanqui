@@ -1967,6 +1967,20 @@ _Maxikiosko Blanqui_`,
                     } else if (loyaltyMode === "cashback") {
                       const accum = c.cashbackAccum || 0;
                       const pct = Math.round((accum / CASHBACK_THRESHOLD) * 100);
+                      const diasVenc = cashbackConfig.vencimientoDias || 30;
+                      const ultimaCompra = c.ultimaCompra || null;
+                      const diasSin = ultimaCompra
+                        ? Math.floor((Date.now() - new Date(ultimaCompra).getTime()) / 86400000)
+                        : 0;
+                      const vencido = ultimaCompra && diasSin > diasVenc;
+                      if (vencido) {
+                        return (
+                          <div style={{ background: "#FFF3E0", borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: 12, color: "#E65100", fontWeight: 600, border: "1.5px solid #FFCC80" }}>
+                            ⚠️ Tu cashback de ${accum.toLocaleString("es-AR")} venció por {diasSin} días sin compras (límite: {diasVenc} días).
+                            {" "}Al confirmar este pedido empezás a acumular de nuevo.
+                          </div>
+                        );
+                      }
                       return (
                         <div style={{ background: "#F0FAF2", borderRadius: 10, padding: "10px 14px", marginBottom: 12, fontSize: 12, color: "#1A7A2E", fontWeight: 600 }}>
                           💰 Cashback acumulado: ${accum.toLocaleString("es-AR")} / ${CASHBACK_THRESHOLD.toLocaleString("es-AR")} ({pct}%)
@@ -3026,6 +3040,12 @@ _Maxikiosko Blanqui_`,
                       const nextPct = getProgressiveDiscount(cyclePos + 1);
                       const cashbackAccum = c.cashbackAccum || 0;
                       const cashbackPct = Math.min(100, Math.round((cashbackAccum / CASHBACK_THRESHOLD) * 100));
+                      const diasVencAdmin = cashbackConfig.vencimientoDias || 30;
+                      const ultimaCompraAdmin = c.ultimaCompra || null;
+                      const diasSinAdmin = ultimaCompraAdmin
+                        ? Math.floor((Date.now() - new Date(ultimaCompraAdmin).getTime()) / 86400000)
+                        : 0;
+                      const cashbackVencido = ultimaCompraAdmin && diasSinAdmin > diasVencAdmin;
                       return (
                         <div
                           key={c.phone || c.name}
@@ -3100,16 +3120,24 @@ _Maxikiosko Blanqui_`,
                               {loyaltyMode === "cashback" ? (
                                 <>
                                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                                    <span style={{ fontSize: 11, color: "#666", fontWeight: 600 }}>
-                                      💰 Cashback acumulado: ${cashbackAccum.toLocaleString("es-AR")}
+                                    <span style={{ fontSize: 11, color: cashbackVencido ? "#E65100" : "#666", fontWeight: 600 }}>
+                                      {cashbackVencido ? "⚠️ Cashback vencido: " : "💰 Cashback acumulado: "}
+                                      <span style={{ textDecoration: cashbackVencido ? "line-through" : "none" }}>
+                                        ${cashbackAccum.toLocaleString("es-AR")}
+                                      </span>
                                     </span>
-                                    <span style={{ fontSize: 11, color: "#1565C0", fontWeight: 700 }}>
-                                      meta ${CASHBACK_THRESHOLD.toLocaleString("es-AR")}
+                                    <span style={{ fontSize: 11, color: cashbackVencido ? "#E65100" : "#1565C0", fontWeight: 700 }}>
+                                      {cashbackVencido ? `${diasSinAdmin}d sin compras` : `meta $${CASHBACK_THRESHOLD.toLocaleString("es-AR")}`}
                                     </span>
                                   </div>
                                   <div style={{ background: "#F0F0F0", borderRadius: 99, height: 8, overflow: "hidden" }}>
-                                    <div style={{ width: `${cashbackPct}%`, height: "100%", background: "linear-gradient(90deg,#1565C0,#42A5F5)", borderRadius: 99, transition: "width 0.4s" }} />
+                                    <div style={{ width: cashbackVencido ? "100%" : `${cashbackPct}%`, height: "100%", background: cashbackVencido ? "linear-gradient(90deg,#FF8A65,#E64A19)" : "linear-gradient(90deg,#1565C0,#42A5F5)", borderRadius: 99, transition: "width 0.4s", opacity: cashbackVencido ? 0.5 : 1 }} />
                                   </div>
+                                  {cashbackVencido && (
+                                    <div style={{ fontSize: 10, color: "#E65100", marginTop: 3, fontWeight: 600 }}>
+                                      Se reseteará en la próxima compra
+                                    </div>
+                                  )}
                                 </>
                               ) : loyaltyMode === "progresivo" ? (
                                 <>
