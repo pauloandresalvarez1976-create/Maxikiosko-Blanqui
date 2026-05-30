@@ -405,6 +405,31 @@ function App() {
     if (loggedUser) localStorage.setItem("mk_loggedUser", JSON.stringify(loggedUser));
     else localStorage.removeItem("mk_loggedUser");
   }, [loggedUser]);
+
+  // ── Migración: si el cliente ya tiene token en localStorage, guardarlo en customers ──
+  useEffect(() => {
+    if (!loggedUser || isAdmin) return;
+    const token = localStorage.getItem("mk_fcmToken");
+    if (!token) return;
+    const phone = (loggedUser.phone || "").trim();
+    const name = (loggedUser.name || "").trim().toLowerCase();
+    const customerKey = phone || name;
+    if (!customerKey) return;
+    setCustomers((prev) => {
+      // Solo actualizar si el token cambió o no estaba
+      if (prev[customerKey]?.fcmToken === token) return prev;
+      const updated = {
+        ...prev,
+        [customerKey]: {
+          ...(prev[customerKey] || {}),
+          fcmToken: token,
+          handle: loggedUser.handle,
+        },
+      };
+      saveToFirestore("customers", updated);
+      return updated;
+    });
+  }, [loggedUser, isAdmin]);
   const [activeOrderId, setActiveOrderId] = usePersist("activeOrderId", null); // ID del último pedido del cliente
 
   // ── Detector automático de cancelación ──
