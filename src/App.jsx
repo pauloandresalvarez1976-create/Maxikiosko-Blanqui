@@ -2697,11 +2697,14 @@ _Maxikiosko Blanqui_`,
               const key = (client.phone || "").trim() || (client.name || "").trim().toLowerCase();
               if (!key) return;
               if (!window.confirm(`¿Eliminar a ${client.name || "este cliente"} definitivamente? Esta acción no se puede deshacer.`)) return;
+              // Borrar todas las claves posibles del cliente (phone, name, handle)
+              const keysToDelete = new Set([key]);
+              if (client.handle) keysToDelete.add(client.handle);
+              if (client.name) keysToDelete.add(client.name.trim().toLowerCase());
               const next = { ...customers };
-              delete next[key];
+              keysToDelete.forEach(k => { delete next[k]; deleteCustomerFromFirestore(k); });
               localStorage.setItem("mk_customers", JSON.stringify(next));
               setCustomers(next);
-              deleteCustomerFromFirestore(key);
               showToast(`🗑️ ${client.name || "Cliente"} eliminado`);
             };
 
