@@ -208,6 +208,9 @@ function App() {
   const [editingOrder, setEditingOrder] = useState(null); // pedido que se está editando
   const [showBlockedList, setShowBlockedList] = useState(false);
   const [adminTab, setAdminTab] = useState("productos"); // productos | pedidos | banners | envios | horarios
+  const [pushTitle, setPushTitle] = useState("");
+  const [pushBody, setPushBody] = useState("");
+  const [pushSending, setPushSending] = useState(false);
   const [historialExpanded, setHistorialExpanded] = useState(null); // id del pedido expandido en el historial
   const [freeShippingEnabled, setFreeShippingEnabled] = usePersist("freeShippingEnabled", false);
   const [freeShippingThreshold, setFreeShippingThreshold] = usePersist("freeShippingThreshold", 20000);
@@ -2770,34 +2773,58 @@ _Maxikiosko Blanqui_`,
             return (
               <div style={{ padding: "14px 14px 32px" }}>
 
-                {/* ── Botón Notificar a todos ── */}
+                {/* ── Notificación masiva ── */}
                 {(() => {
                   const clientsWithToken = Object.values(customers).filter(c => c.fcmToken);
-                  if (clientsWithToken.length === 0) return null;
+                  const sendToAll = async () => {
+                    if (!pushTitle.trim() || !pushBody.trim()) {
+                      showToast("⚠️ Completá el título y el mensaje");
+                      return;
+                    }
+                    if (clientsWithToken.length === 0) {
+                      showToast("⚠️ Ningún cliente tiene notificaciones activadas aún");
+                      return;
+                    }
+                    setPushSending(true);
+                    let ok = 0; let fail = 0;
+                    for (const c of clientsWithToken) {
+                      try {
+                        const res = await fetch("https://sendpushnotification-zxeein54ta-uc.a.run.app", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ token: c.fcmToken, title: pushTitle.trim(), body: pushBody.trim() }),
+                        });
+                        res.ok ? ok++ : fail++;
+                      } catch { fail++; }
+                    }
+                    setPushSending(false);
+                    setPushTitle("");
+                    setPushBody("");
+                    showToast(clientsWithToken.length === 0 ? "⚠️ Sin destinatarios" : `✅ ${ok} enviadas${fail > 0 ? ` · ❌ ${fail} fallaron` : ""}`);
+                  };
                   return (
-                    <button
-                      onClick={async () => {
-                        const title = prompt("Título para TODOS los clientes:", "¡Novedad en la tienda! 🛒");
-                        if (!title) return;
-                        const body = prompt("Mensaje:", "Entrá y mirá las novedades.");
-                        if (!body) return;
-                        let ok = 0; let fail = 0;
-                        for (const c of clientsWithToken) {
-                          try {
-                            const res = await fetch("https://sendpushnotification-zxeein54ta-uc.a.run.app", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ token: c.fcmToken, title, body }),
-                            });
-                            res.ok ? ok++ : fail++;
-                          } catch { fail++; }
-                        }
-                        showToast(`✅ ${ok} enviadas${fail > 0 ? ` · ❌ ${fail} fallaron` : ""}`);
-                      }}
-                      style={{ width: "100%", marginBottom: 12, padding: "12px 0", background: "linear-gradient(135deg,#1565C0,#1976D2)", color: "#fff", border: "none", borderRadius: 12, fontWeight: 900, fontSize: 14, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px rgba(21,101,192,0.35)", }}
-                    >
-                      🔔 Notificar a todos ({clientsWithToken.length} clientes)
-                    </button>
+                    <div style={{ background: "#fff", border: "2px solid #BBDEFB", borderRadius: 16, padding: "16px", marginBottom: 14, boxShadow: "0 2px 8px rgba(21,101,192,0.08)" }}>
+                      <div style={{ fontWeight: 900, fontSize: 14, color: "#1565C0", marginBottom: 12 }}>🔔 Enviar notificación a todos</div>
+                      <input
+                        value={pushTitle}
+                        onChange={e => setPushTitle(e.target.value)}
+                        placeholder="Título"
+                        style={{ width: "100%", padding: "10px 14px", border: "1.5px solid #DDD", borderRadius: 10, fontSize: 14, fontFamily: "inherit", outline: "none", marginBottom: 8, boxSizing: "border-box" }}
+                      />
+                      <input
+                        value={pushBody}
+                        onChange={e => setPushBody(e.target.value)}
+                        placeholder="Mensaje"
+                        style={{ width: "100%", padding: "10px 14px", border: "1.5px solid #DDD", borderRadius: 10, fontSize: 14, fontFamily: "inherit", outline: "none", marginBottom: 10, boxSizing: "border-box" }}
+                      />
+                      <button
+                        onClick={sendToAll}
+                        disabled={pushSending}
+                        style={{ width: "100%", padding: "11px 0", background: pushSending ? "#90CAF9" : "linear-gradient(135deg,#1565C0,#1976D2)", color: "#fff", border: "none", borderRadius: 10, fontWeight: 900, fontSize: 14, cursor: pushSending ? "not-allowed" : "pointer", fontFamily: "inherit" }}
+                      >
+                        {pushSending ? "Enviando..." : `🔔 Enviar a todos${clientsWithToken.length > 0 ? ` (${clientsWithToken.length})` : ""}`}
+                      </button>
+                    </div>
                   );
                 })()}
 
