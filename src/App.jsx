@@ -2761,7 +2761,7 @@ _Maxikiosko Blanqui_`,
                 const res = await fetch("https://sendpushnotification-zxeein54ta-uc.a.run.app", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ token, title, body }),
+                  body: JSON.stringify({ token, title, body, secret: "blanqui2025" }),
                 });
                 if (res.ok) showToast(`✅ Notificación enviada a ${client.name || "el cliente"}`);
                 else showToast("❌ Error al enviar la notificación");
@@ -2781,26 +2781,21 @@ _Maxikiosko Blanqui_`,
                       showToast("⚠️ Completá el título y el mensaje");
                       return;
                     }
-                    if (clientsWithToken.length === 0) {
-                      showToast("⚠️ Ningún cliente tiene notificaciones activadas aún");
-                      return;
-                    }
                     setPushSending(true);
-                    let ok = 0; let fail = 0;
-                    for (const c of clientsWithToken) {
-                      try {
-                        const res = await fetch("https://sendpushnotification-zxeein54ta-uc.a.run.app", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ token: c.fcmToken, title: pushTitle.trim(), body: pushBody.trim() }),
-                        });
-                        res.ok ? ok++ : fail++;
-                      } catch { fail++; }
-                    }
-                    setPushSending(false);
-                    setPushTitle("");
-                    setPushBody("");
-                    showToast(clientsWithToken.length === 0 ? "⚠️ Sin destinatarios" : `✅ ${ok} enviadas${fail > 0 ? ` · ❌ ${fail} fallaron` : ""}`);
+                    try {
+                      const res = await fetch("https://sendpushnotification-zxeein54ta-uc.a.run.app", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ title: pushTitle.trim(), body: pushBody.trim(), secret: "blanqui2025" }),
+                      });
+                      const data = await res.json();
+                      setPushSending(false);
+                      if (res.ok) showToast(`✅ ${data.enviados} notificaciones enviadas`);
+                      else showToast("❌ Error al enviar");
+                      setPushTitle("");
+                      setPushBody("");
+                      return;
+                    } catch { showToast("❌ Error de red"); setPushSending(false); }
                   };
                   return (
                     <div style={{ background: "#fff", border: "2px solid #BBDEFB", borderRadius: 16, padding: "16px", marginBottom: 14, boxShadow: "0 2px 8px rgba(21,101,192,0.08)" }}>
