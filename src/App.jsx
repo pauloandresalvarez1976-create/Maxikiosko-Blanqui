@@ -3375,13 +3375,6 @@ _Maxikiosko Blanqui_`,
                               {c.cashbackDisabled ? "💰 Activar cashback" : "🚫 Excluir del cashback"}
                             </button>
                           )}
-                          {/* Botón enviar notificación push */}
-                          <button
-                            onClick={() => sendPushToClient(c)}
-                            style={{ width: "100%", marginTop: 8, padding: "9px 12px", background: "#E8F4FD", color: "#0D6EFD", border: "1.5px solid #90CAF9", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
-                          >
-                            🔔 Enviar notificación push
-                          </button>
                           {/* Botón eliminar cliente */}
                           <button
                             onClick={() => deleteClient(c)}
