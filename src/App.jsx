@@ -290,6 +290,8 @@ function App() {
   ]);
   // Sistema de fidelización: { [phone]: { name, phone, totalOrders, pendingDiscount } }
   const [customers, setCustomers] = usePersist("customers", {});
+  // Tokens FCM: { [handle]: token } — cargados desde Firestore para que el admin pueda enviar push
+  const [fcmTokens, setFcmTokens] = useState({});
   const [loyaltyEnabled, setLoyaltyEnabled] = usePersist("loyaltyEnabled", true); // toggle activar/desactivar fidelización
   // Modo de fidelización: "simple" | "progresivo" | "cashback"
   const [loyaltyMode, setLoyaltyMode] = usePersist("loyaltyMode", "simple");
@@ -556,6 +558,7 @@ function App() {
       if (data.cashbackConfig) update(setCashbackConfig, "cashbackConfig", data.cashbackConfig);
       if (data.mpAccessToken !== undefined) { setMpAccessToken(data.mpAccessToken); localStorage.setItem("mk_mpAccessToken", JSON.stringify(data.mpAccessToken)); }
       if (data.deliveryETA) update(setDeliveryETA, "deliveryETA", data.deliveryETA);
+      if (data.fcmTokens) setFcmTokens(data.fcmTokens);
     });
 
     // Listener en tiempo real
@@ -2691,6 +2694,34 @@ _Maxikiosko Blanqui_`,
                   : `🚫 ${client.name || "Cliente"} bloqueado`
               );
             };
+
+            // Helper para enviar push notification a un cliente
+            const sendPushToClient = async (client) => {
+              const handle = client.handle || client.phone || client.name?.toLowerCase().trim();
+              const token = fcmTokens[handle] || Object.entries(fcmTokens).find(([k]) =>
+                k === client.handle || k === client.phone
+              )?.[1];
+              if (!token) {
+                showToast("⚠️ Este cliente no tiene notificaciones activadas");
+                return;
+              }
+              const title = prompt(`Título de la notificación para ${client.name || "el cliente"}:`, "Tu pedido está listo 🎉");
+              if (!title) return;
+              const body = prompt("Mensaje:", "Pasá a buscarlo cuando quieras.");
+              if (!body) return;
+              try {
+                const res = await fetch("https://sendpushnotification-zxeein54ta-uc.a.run.app", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ token, title, body }),
+                });
+                if (res.ok) showToast(`✅ Notificación enviada a ${client.name || "el cliente"}`);
+                else showToast("❌ Error al enviar la notificación");
+              } catch (e) {
+                showToast("❌ Error de red al enviar la notificación");
+              }
+            };
+
             return (
               <div style={{ padding: "14px 14px 32px" }}>
 
@@ -3243,6 +3274,13 @@ _Maxikiosko Blanqui_`,
                               {c.cashbackDisabled ? "💰 Activar cashback" : "🚫 Excluir del cashback"}
                             </button>
                           )}
+                          {/* Botón enviar notificación push */}
+                          <button
+                            onClick={() => sendPushToClient(c)}
+                            style={{ width: "100%", marginTop: 8, padding: "9px 12px", background: "#E8F4FD", color: "#0D6EFD", border: "1.5px solid #90CAF9", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
+                          >
+                            🔔 Enviar notificación push
+                          </button>
                           {/* Botón eliminar cliente */}
                           <button
                             onClick={() => deleteClient(c)}
