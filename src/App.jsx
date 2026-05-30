@@ -343,12 +343,31 @@ function App() {
     // Pedir permiso y obtener token
     requestFCMToken().then((token) => {
       if (token) {
-        // Guardar token en Firestore asociado al usuario para enviarle notificaciones
+        // Guardar token en fcmTokens (por handle)
         saveToFirestore("fcmTokens", {
           ...(JSON.parse(localStorage.getItem("mk_fcmTokens") || "{}")),
           [loggedUser.handle]: token,
         });
         localStorage.setItem("mk_fcmToken", token);
+
+        // También guardar el token dentro del registro del cliente en customers
+        const phone = (loggedUser.phone || "").trim();
+        const name = (loggedUser.name || "").trim().toLowerCase();
+        const customerKey = phone || name;
+        if (customerKey) {
+          setCustomers((prev) => {
+            const updated = {
+              ...prev,
+              [customerKey]: {
+                ...(prev[customerKey] || {}),
+                fcmToken: token,
+                handle: loggedUser.handle,
+              },
+            };
+            saveToFirestore("customers", updated);
+            return updated;
+          });
+        }
       }
     });
 
@@ -2697,10 +2716,11 @@ _Maxikiosko Blanqui_`,
 
             // Helper para enviar push notification a un cliente
             const sendPushToClient = async (client) => {
-              const handle = client.handle || client.phone || client.name?.toLowerCase().trim();
-              const token = fcmTokens[handle] || Object.entries(fcmTokens).find(([k]) =>
-                k === client.handle || k === client.phone
-              )?.[1];
+              // Buscar token: primero en el registro del cliente, luego en fcmTokens por handle
+              const token = client.fcmToken
+                || fcmTokens[client.handle]
+                || fcmTokens[client.phone]
+                || null;
               if (!token) {
                 showToast("⚠️ Este cliente no tiene notificaciones activadas");
                 return;
@@ -2724,6 +2744,37 @@ _Maxikiosko Blanqui_`,
 
             return (
               <div style={{ padding: "14px 14px 32px" }}>
+
+                {/* ── Botón Notificar a todos ── */}
+                {(() => {
+                  const clientsWithToken = Object.values(customers).filter(c => c.fcmToken);
+                  if (clientsWithToken.length === 0) return null;
+                  return (
+                    <button
+                      onClick={async () => {
+                        const title = prompt("Título para TODOS los clientes:", "¡Novedad en la tienda! 🛒");
+                        if (!title) return;
+                        const body = prompt("Mensaje:", "Entrá y mirá las novedades.");
+                        if (!body) return;
+                        let ok = 0; let fail = 0;
+                        for (const c of clientsWithToken) {
+                          try {
+                            const res = await fetch("https://sendpushnotification-zxeein54ta-uc.a.run.app", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ token: c.fcmToken, title, body }),
+                            });
+                            res.ok ? ok++ : fail++;
+                          } catch { fail++; }
+                        }
+                        showToast(`✅ ${ok} enviadas${fail > 0 ? ` · ❌ ${fail} fallaron` : ""}`);
+                      }}
+                      style={{ width: "100%", marginBottom: 12, padding: "12px 0", background: "linear-gradient(135deg,#1565C0,#1976D2)", color: "#fff", border: "none", borderRadius: 12, fontWeight: 900, fontSize: 14, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px rgba(21,101,192,0.35)", }}
+                    >
+                      🔔 Notificar a todos ({clientsWithToken.length} clientes)
+                    </button>
+                  );
+                })()}
 
                 {/* ── Toggle Fidelización ── */}
                 <div style={{ background: loyaltyEnabled ? "linear-gradient(135deg,#1A7A2E,#2E9E46)" : "linear-gradient(135deg,#555,#777)", borderRadius: 16, padding: "14px 16px", marginBottom: loyaltyEnabled ? 8 : 16, display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 3px 10px rgba(0,0,0,0.12)", }}>
