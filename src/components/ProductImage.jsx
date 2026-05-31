@@ -8,8 +8,9 @@ export default function ProductImage({ product, size = 90 }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Si tiene foto personalizada, usarla directamente
+    // Si tiene foto personalizada, usarla directamente (limpiar cache para mostrar la nueva)
     if (product.customPhoto) {
+      delete imgCache[product.id];
       setSrc(product.customPhoto);
       setLoading(false);
       return;
