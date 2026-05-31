@@ -4871,9 +4871,7 @@ _Maxikiosko Blanqui_`,
                       style={{ width: 18, height: 18, accentColor: "#6A1B9A", cursor: "pointer", flexShrink: 0 }}
                     />
                   )}
-                  <div style={{ fontSize: 22, width: 32, textAlign: "center" }}>
-                    {p.emoji}
-                  </div>
+                  <ProductImage product={p} size={32} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{ fontWeight: 700, fontSize: 12, color: p.enabled ? "#1A2E1A" : "#888", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", }}
