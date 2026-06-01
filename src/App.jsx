@@ -4185,8 +4185,18 @@ _Maxikiosko Blanqui_`,
                       const newImgs = [];
                       for (const file of files) {
                         if (file.size > 8000000) { showToast("⚠️ " + file.name + " pesa más de 8MB, se omite"); continue; }
-                        const compressed = await compressImage(file);
-                        newImgs.push(compressed);
+                        // Los GIF no se comprimen para preservar la animación
+                        let imgData;
+                        if (file.type === "image/gif") {
+                          imgData = await new Promise((res) => {
+                            const r = new FileReader();
+                            r.onload = () => res(r.result);
+                            r.readAsDataURL(file);
+                          });
+                        } else {
+                          imgData = await compressImage(file);
+                        }
+                        newImgs.push(imgData);
                       }
                       const imgs = [...(slideshowImages.imagenes || []), ...newImgs];
                       const next = { ...slideshowImages, imagenes: imgs };
