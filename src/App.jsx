@@ -242,6 +242,8 @@ function App() {
   const [editProduct, setEditProduct] = useState(null); // {id, price, stock} | null
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [mensajeDelDia, setMensajeDelDia] = usePersist("mensajeDelDia", { activo: false, texto: "", hasta: "" });
+  const [slideshowImages, setSlideshowImages] = usePersist("slideshowImages", { activo: false, imagenes: [] });
+  const [slideshowIndex, setSlideshowIndex] = useState(0);
   const [lowStockThreshold, setLowStockThreshold] = usePersist("lowStockThreshold", 3);
   const [visitCount, setVisitCount] = usePersist("visitCount", { total: 0, hoy: 0, fecha: "" });
   const [orderSearch, setOrderSearch] = useState("");
@@ -548,7 +550,7 @@ function App() {
   useEffect(() => {
     // Limpiar claves de configuración del localStorage para que Firebase sea la fuente de verdad
     const CONFIG_KEYS = ["horarios", "vacaciones", "mantenimiento", "efectivoEnabled", "transferenciaConfig",
-      "whatsappConfig", "contactInfo", "contactBanner", "mensajeDelDia", "freeShippingEnabled",
+      "whatsappConfig", "contactInfo", "contactBanner", "mensajeDelDia", "slideshowImages", "freeShippingEnabled",
       "freeShippingThreshold", "loyaltyEnabled", "loyaltyMode", "deliveryETA", "banners",
       "lowStockThreshold", "cashbackConfig"];
     CONFIG_KEYS.forEach(k => localStorage.removeItem("mk_" + k));
@@ -591,6 +593,7 @@ function App() {
       if (data.whatsappConfig) update(setWhatsappConfig, "whatsappConfig", data.whatsappConfig);
       if (data.banners) update(setBanners, "banners", data.banners);
       if (data.mensajeDelDia) update(setMensajeDelDia, "mensajeDelDia", data.mensajeDelDia);
+      if (data.slideshowImages) update(setSlideshowImages, "slideshowImages", data.slideshowImages);
       if (data.freeShippingEnabled !== undefined) update(setFreeShippingEnabled, "freeShippingEnabled", data.freeShippingEnabled);
       if (data.freeShippingThreshold !== undefined) update(setFreeShippingThreshold, "freeShippingThreshold", data.freeShippingThreshold);
       // Forzar efectivoEnabled desde Firebase (sin comparar, siempre toma el valor del servidor)
@@ -4094,6 +4097,110 @@ _Maxikiosko Blanqui_`,
               💡 Los cambios se ven en la tienda al instante
             </div>
 
+            {/* ── Mensaje del día ── */}
+            <div style={{ marginTop: 16 }}>
+              <p style={{ fontSize: 13, color: "#444", fontWeight: 800, marginBottom: 8 }}>📢 Mensaje del día</p>
+              <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: mensajeDelDia.activo ? "2px solid #FF8F00" : "2px solid #EEE" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: "#333" }}>Mensaje del día</div>
+                    <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>Aparece en la tienda debajo del horario</div>
+                  </div>
+                  <button onClick={() => setMensajeDelDia(prev => ({ ...prev, activo: !prev.activo }))}
+                    style={{ background: mensajeDelDia.activo ? "#FF6B00" : "#E0E0E0", color: "#fff", border: "none", borderRadius: 20, padding: "8px 18px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                    {mensajeDelDia.activo ? "✅ Activo" : "⛔ Inactivo"}
+                  </button>
+                </div>
+                <textarea value={mensajeDelDia.texto}
+                  onChange={e => setMensajeDelDia(prev => ({ ...prev, texto: e.target.value }))}
+                  placeholder="Ej: 🎉 Hoy 2x1 en todas las cervezas hasta las 20hs"
+                  rows={2}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #DDD", fontSize: 13, fontFamily: "inherit", resize: "none", boxSizing: "border-box", outline: "none" }}
+                />
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+                  <div style={{ fontSize: 12, color: "#666", fontWeight: 700, flexShrink: 0 }}>⏰ Vence a las:</div>
+                  <input type="time" value={mensajeDelDia.hasta || ""}
+                    onChange={e => setMensajeDelDia(prev => ({ ...prev, hasta: e.target.value }))}
+                    style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1.5px solid #DDD", fontSize: 13, fontFamily: "inherit", outline: "none" }}
+                  />
+                  {mensajeDelDia.hasta && (
+                    <button onClick={() => setMensajeDelDia(prev => ({ ...prev, hasta: "" }))}
+                      style={{ background: "#F0F0F0", border: "none", borderRadius: 8, padding: "7px 10px", fontSize: 12, cursor: "pointer", color: "#888", fontFamily: "inherit" }}>
+                      Quitar
+                    </button>
+                  )}
+                </div>
+                <div style={{ fontSize: 10, color: "#AAA", marginTop: 4 }}>Opcional — si ponés hora, el cliente ve un contador ⏰</div>
+              </div>
+            </div>
+
+            {/* ── Slideshow de imágenes ── */}
+            <div style={{ marginTop: 16 }}>
+              <p style={{ fontSize: 13, color: "#444", fontWeight: 800, marginBottom: 8 }}>🖼️ Imágenes en diapositiva</p>
+              <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: slideshowImages.activo ? "2px solid #1565C0" : "2px solid #EEE" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: "#333" }}>Carrusel de imágenes</div>
+                    <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>Se muestra en la tienda como diapositivas</div>
+                  </div>
+                  <button onClick={() => { const next = { ...slideshowImages, activo: !slideshowImages.activo }; setSlideshowImages(next); saveToFirestore("slideshowImages", next); }}
+                    style={{ background: slideshowImages.activo ? "#1565C0" : "#E0E0E0", color: "#fff", border: "none", borderRadius: 20, padding: "8px 18px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                    {slideshowImages.activo ? "✅ Activo" : "⛔ Inactivo"}
+                  </button>
+                </div>
+                {/* Preview */}
+                {slideshowImages.imagenes?.length > 0 && (
+                  <div style={{ marginBottom: 12, borderRadius: 10, overflow: "hidden", border: "1.5px solid #E0E0E0", position: "relative" }}>
+                    <img src={slideshowImages.imagenes[0]} alt="preview" style={{ width: "100%", maxHeight: 160, objectFit: "cover", display: "block" }} />
+                    {slideshowImages.imagenes.length > 1 && (
+                      <div style={{ position: "absolute", bottom: 6, right: 8, background: "rgba(0,0,0,0.5)", color: "#fff", borderRadius: 8, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
+                        +{slideshowImages.imagenes.length - 1} más
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* Images list */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+                  {(slideshowImages.imagenes || []).map((img, idx) => (
+                    <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, background: "#F8F8F8", borderRadius: 10, padding: "8px 10px" }}>
+                      <img src={img} alt={`slide-${idx}`} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
+                      <div style={{ flex: 1, fontSize: 12, color: "#666", fontWeight: 600 }}>Imagen {idx + 1}</div>
+                      <button onClick={() => {
+                        const imgs = slideshowImages.imagenes.filter((_, i) => i !== idx);
+                        const next = { ...slideshowImages, imagenes: imgs };
+                        setSlideshowImages(next);
+                        saveToFirestore("slideshowImages", next);
+                      }} style={{ background: "#FFF0F0", border: "none", borderRadius: 8, padding: "6px 10px", color: "#CC2222", fontSize: 12, cursor: "pointer", fontFamily: "inherit", fontWeight: 700 }}>🗑️</button>
+                    </div>
+                  ))}
+                </div>
+                {/* Upload button */}
+                <label style={{ display: "block", background: "#1565C0", color: "#fff", borderRadius: 10, padding: "10px 0", textAlign: "center", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+                  📁 Agregar imagen
+                  <input type="file" accept="image/*" multiple style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files);
+                      if (!files.length) return;
+                      showToast("🔄 Subiendo imágenes...");
+                      const newImgs = [];
+                      for (const file of files) {
+                        if (file.size > 8000000) { showToast("⚠️ " + file.name + " pesa más de 8MB, se omite"); continue; }
+                        const compressed = await compressImage(file);
+                        newImgs.push(compressed);
+                      }
+                      const imgs = [...(slideshowImages.imagenes || []), ...newImgs];
+                      const next = { ...slideshowImages, imagenes: imgs };
+                      setSlideshowImages(next);
+                      saveToFirestore("slideshowImages", next);
+                      showToast(`✅ ${newImgs.length} imagen(es) agregada(s)`);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                <div style={{ fontSize: 10, color: "#AAA", marginTop: 6 }}>Podés subir JPG, PNG, GIF, WebP. Máx 8MB por imagen.</div>
+              </div>
+            </div>
+
             {/* Cartel de Contacto */}
             <div style={{ marginTop: 16 }}>
               <p
@@ -5987,7 +6094,7 @@ _Maxikiosko Blanqui_`,
                   try {
                     showToast("⏳ Generando backup completo...");
                     // Recolectar todo desde localStorage + estado actual
-                    const ALL_KEYS = ["products","orders","customers","horarios","banners","vacaciones","mantenimiento","contactBanner","contactInfo","loyaltyEnabled","loyaltyMode","freeShippingEnabled","freeShippingThreshold","deliveryETA","whatsappConfig","activeOrderId","appVersion","transferenciaConfig","efectivoEnabled","lowStockThreshold","cashbackConfig","mensajeDelDia"];
+                    const ALL_KEYS = ["products","orders","customers","horarios","banners","vacaciones","mantenimiento","contactBanner","contactInfo","loyaltyEnabled","loyaltyMode","freeShippingEnabled","freeShippingThreshold","deliveryETA","whatsappConfig","activeOrderId","appVersion","transferenciaConfig","efectivoEnabled","lowStockThreshold","cashbackConfig","mensajeDelDia","slideshowImages"];
                     const backup = { _version: 2, _date: new Date().toISOString(), _app: "maxikiosko" };
                     ALL_KEYS.forEach(k => {
                       const v = localStorage.getItem("mk_" + k);
@@ -6028,7 +6135,7 @@ _Maxikiosko Blanqui_`,
                       }
                       showToast("⏳ Restaurando backup...");
                       // Restaurar en localStorage
-                      const RESTORE_KEYS = ["horarios","banners","vacaciones","mantenimiento","contactBanner","contactInfo","loyaltyEnabled","loyaltyMode","freeShippingEnabled","freeShippingThreshold","deliveryETA","whatsappConfig","appVersion","transferenciaConfig","efectivoEnabled","lowStockThreshold","cashbackConfig","mensajeDelDia"];
+                      const RESTORE_KEYS = ["horarios","banners","vacaciones","mantenimiento","contactBanner","contactInfo","loyaltyEnabled","loyaltyMode","freeShippingEnabled","freeShippingThreshold","deliveryETA","whatsappConfig","appVersion","transferenciaConfig","efectivoEnabled","lowStockThreshold","cashbackConfig","mensajeDelDia","slideshowImages"];
                       RESTORE_KEYS.forEach(k => {
                         if (data[k] !== undefined) localStorage.setItem("mk_" + k, JSON.stringify(data[k]));
                       });
@@ -6049,40 +6156,6 @@ _Maxikiosko Blanqui_`,
 
             {/* RESETEAR DATOS */}
             <div style={{ background: "#FFF3E0", borderRadius: 14, padding: "14px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.07)" }}>
-            {/* Mensaje del día */}
-            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: mensajeDelDia.activo ? "2px solid #FF8F00" : "2px solid #EEE" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: 14, color: "#333" }}>📢 Mensaje del día</div>
-                  <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>Aparece en la tienda debajo del horario</div>
-                </div>
-                <button onClick={() => setMensajeDelDia(prev => ({ ...prev, activo: !prev.activo }))}
-                  style={{ background: mensajeDelDia.activo ? "#FF6B00" : "#E0E0E0", color: "#fff", border: "none", borderRadius: 20, padding: "8px 18px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-                  {mensajeDelDia.activo ? "✅ Activo" : "⛔ Inactivo"}
-                </button>
-              </div>
-              <textarea value={mensajeDelDia.texto}
-                onChange={e => setMensajeDelDia(prev => ({ ...prev, texto: e.target.value }))}
-                placeholder="Ej: 🎉 Hoy 2x1 en todas las cervezas hasta las 20hs"
-                rows={2}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #DDD", fontSize: 13, fontFamily: "inherit", resize: "none", boxSizing: "border-box", outline: "none" }}
-              />
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-                <div style={{ fontSize: 12, color: "#666", fontWeight: 700, flexShrink: 0 }}>⏰ Vence a las:</div>
-                <input type="time" value={mensajeDelDia.hasta || ""}
-                  onChange={e => setMensajeDelDia(prev => ({ ...prev, hasta: e.target.value }))}
-                  style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1.5px solid #DDD", fontSize: 13, fontFamily: "inherit", outline: "none" }}
-                />
-                {mensajeDelDia.hasta && (
-                  <button onClick={() => setMensajeDelDia(prev => ({ ...prev, hasta: "" }))}
-                    style={{ background: "#F0F0F0", border: "none", borderRadius: 8, padding: "7px 10px", fontSize: 12, cursor: "pointer", color: "#888", fontFamily: "inherit" }}>
-                    Quitar
-                  </button>
-                )}
-              </div>
-              <div style={{ fontSize: 10, color: "#AAA", marginTop: 4 }}>Opcional — si ponés hora, el cliente ve un contador ⏰</div>
-            </div>
-
             {/* Alerta stock bajo */}
             <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #FFF3E0" }}>
               <div style={{ fontWeight: 800, fontSize: 14, color: "#333", marginBottom: 4 }}>⚠️ Alerta de stock bajo</div>
@@ -6129,7 +6202,7 @@ _Maxikiosko Blanqui_`,
                 onClick={() => {
                   if (window.confirm("¿Seguro que querés RESETEAR TODO el kiosko a los valores de fábrica? Se perderán todos los datos.")) {
                     try {
-                      const ALL_KEYS = ["products","orders","customers","horarios","banners","vacaciones","mantenimiento","contactBanner","contactInfo","loyaltyEnabled","loyaltyMode","freeShippingEnabled","freeShippingThreshold","deliveryETA","whatsappConfig","activeOrderId","appVersion","transferenciaConfig","efectivoEnabled","lowStockThreshold","cashbackConfig","mensajeDelDia"];
+                      const ALL_KEYS = ["products","orders","customers","horarios","banners","vacaciones","mantenimiento","contactBanner","contactInfo","loyaltyEnabled","loyaltyMode","freeShippingEnabled","freeShippingThreshold","deliveryETA","whatsappConfig","activeOrderId","appVersion","transferenciaConfig","efectivoEnabled","lowStockThreshold","cashbackConfig","mensajeDelDia","slideshowImages"];
                       // Borrar localStorage
                       ALL_KEYS.forEach(k => localStorage.removeItem("mk_" + k));
                       // Borrar Firebase Firestore
@@ -8032,6 +8105,25 @@ _Maxikiosko Blanqui_`,
               <div style={{ flexShrink: 0, background: "rgba(0,0,0,0.2)", borderRadius: 8, padding: "4px 8px", textAlign: "center" }}>
                 <div style={{ fontSize: 9, color: "rgba(255,255,255,0.8)", fontWeight: 700 }}>⏰ QUEDA</div>
                 <div style={{ fontSize: 13, color: "#fff", fontWeight: 900 }}>{countdown}</div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* Slideshow de imágenes */}
+      {slideshowImages.activo && slideshowImages.imagenes?.length > 0 && (() => {
+        const imgs = slideshowImages.imagenes;
+        const idx = slideshowIndex % imgs.length;
+        return (
+          <div style={{ margin: "8px 14px 0", borderRadius: 12, overflow: "hidden", position: "relative", userSelect: "none" }}
+            onClick={() => setSlideshowIndex(prev => (prev + 1) % imgs.length)}>
+            <img src={imgs[idx]} alt={`slide-${idx}`} style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} />
+            {imgs.length > 1 && (
+              <div style={{ position: "absolute", bottom: 8, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 5 }}>
+                {imgs.map((_, i) => (
+                  <div key={i} style={{ width: i === idx ? 16 : 6, height: 6, borderRadius: 3, background: i === idx ? "#fff" : "rgba(255,255,255,0.5)", transition: "all 0.3s" }} />
+                ))}
               </div>
             )}
           </div>
