@@ -37,6 +37,7 @@ const FIREBASE_KEYS = [
   "transferenciaConfig",
   "fcmTokens",
   "mpAccessToken",
+  "slideshowImages",
 ];
 
 // ID fijo del documento de la tienda en Firestore
