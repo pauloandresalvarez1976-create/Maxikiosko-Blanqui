@@ -353,19 +353,22 @@ function App() {
         });
         localStorage.setItem("mk_fcmToken", token);
 
-        // También guardar el token dentro del registro del cliente en customers
-        const phone = (loggedUser.phone || "").trim();
-        const name = (loggedUser.name || "").trim().toLowerCase();
-        const customerKey = phone || name;
-        if (customerKey) {
+        // Guardar token FCM en el registro existente del cliente (solo si ya hizo al menos una compra)
+        if (!isAdmin) {
           setCustomers((prev) => {
+            // Buscar cliente existente por handle o por nombre
+            const handle = (loggedUser.handle || "").toLowerCase();
+            const name = (loggedUser.name || "").trim().toLowerCase();
+            const existingKey = Object.keys(prev).find(k =>
+              prev[k]?.handle === loggedUser.handle ||
+              prev[k]?.name?.toLowerCase() === name ||
+              k === name
+            );
+            if (!existingKey) return prev; // No crear registro si nunca hizo una compra
+            if (prev[existingKey]?.fcmToken === token) return prev;
             const updated = {
               ...prev,
-              [customerKey]: {
-                ...(prev[customerKey] || {}),
-                fcmToken: token,
-                handle: loggedUser.handle,
-              },
+              [existingKey]: { ...prev[existingKey], fcmToken: token, handle: loggedUser.handle },
             };
             saveToFirestore("customers", updated);
             return updated;
@@ -413,21 +416,20 @@ function App() {
   useEffect(() => {
     if (!loggedUser || isAdmin) return;
     const token = localStorage.getItem("mk_fcmToken");
-    if (!token) return;
-    const phone = (loggedUser.phone || "").trim();
-    const name = (loggedUser.name || "").trim().toLowerCase();
-    const customerKey = phone || name;
-    if (!customerKey) return;
+    if (!token || isAdmin) return;
+    // Buscar cliente existente por handle o nombre (no crear si nunca compró)
     setCustomers((prev) => {
-      // Solo actualizar si el token cambió o no estaba
-      if (prev[customerKey]?.fcmToken === token) return prev;
+      const name = (loggedUser.name || "").trim().toLowerCase();
+      const existingKey = Object.keys(prev).find(k =>
+        prev[k]?.handle === loggedUser.handle ||
+        prev[k]?.name?.toLowerCase() === name ||
+        k === name
+      );
+      if (!existingKey) return prev;
+      if (prev[existingKey]?.fcmToken === token) return prev;
       const updated = {
         ...prev,
-        [customerKey]: {
-          ...(prev[customerKey] || {}),
-          fcmToken: token,
-          handle: loggedUser.handle,
-        },
+        [existingKey]: { ...prev[existingKey], fcmToken: token, handle: loggedUser.handle },
       };
       saveToFirestore("customers", updated);
       return updated;
