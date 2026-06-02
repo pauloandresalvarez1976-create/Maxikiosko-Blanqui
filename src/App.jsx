@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { saveToFirestore, loadFromFirestore, subscribeToFirestore, deleteCustomerFromFirestore, addOrderToFirestore, updateOrderInFirestore, FIREBASE_KEYS } from "./useFirestore";
-import { requestFCMToken, onForegroundMessage, uploadProductPhoto, deleteProductPhoto } from "./firebase";
+import { requestFCMToken, onForegroundMessage, uploadProductPhoto, deleteProductPhoto, uploadBannerImage } from "./firebase";
 import RAW_PRODUCTS from "./products.json";
 import EMOJI_MAP from "./emojis.json";
 import Toggle from "./components/Toggle";
@@ -244,6 +244,12 @@ function App() {
   const [mensajeDelDia, setMensajeDelDia] = usePersist("mensajeDelDia", { activo: false, texto: "", hasta: "" });
   const [slideshowImages, setSlideshowImages] = usePersist("slideshowImages", { activo: false, imagenes: [] });
   const [slideshowIndex, setSlideshowIndex] = useState(0);
+  // Auto-avance del slideshow cada 4 segundos
+  useEffect(() => {
+    if (!slideshowImages.activo || !slideshowImages.imagenes?.length || slideshowImages.imagenes.length < 2) return;
+    const timer = setInterval(() => setSlideshowIndex(prev => prev + 1), 4000);
+    return () => clearInterval(timer);
+  }, [slideshowImages.activo, slideshowImages.imagenes?.length]);
   const [lowStockThreshold, setLowStockThreshold] = usePersist("lowStockThreshold", 3);
   const [visitCount, setVisitCount] = usePersist("visitCount", { total: 0, hoy: 0, fecha: "" });
   const [orderSearch, setOrderSearch] = useState("");
@@ -4184,20 +4190,13 @@ _Maxikiosko Blanqui_`,
                       showToast("🔄 Subiendo imágenes...");
                       const newImgs = [];
                       for (const file of files) {
-                        if (file.size > 8000000) { showToast("⚠️ " + file.name + " pesa más de 8MB, se omite"); continue; }
-                        // Los GIF no se comprimen para preservar la animación
-                        let imgData;
-                        if (file.type === "image/gif") {
-                          imgData = await new Promise((res) => {
-                            const r = new FileReader();
-                            r.onload = () => res(r.result);
-                            r.readAsDataURL(file);
-                          });
-                        } else {
-                          imgData = await compressImage(file);
-                        }
-                        newImgs.push(imgData);
+                        if (file.size > 20000000) { showToast("⚠️ " + file.name + " pesa más de 20MB, se omite"); continue; }
+                        try {
+                          const url = await uploadBannerImage(file);
+                          if (url) newImgs.push(url);
+                        } catch { showToast("❌ Error subiendo " + file.name); }
                       }
+                      if (!newImgs.length) { e.target.value = ""; return; }
                       const imgs = [...(slideshowImages.imagenes || []), ...newImgs];
                       const next = { ...slideshowImages, imagenes: imgs };
                       setSlideshowImages(next);
