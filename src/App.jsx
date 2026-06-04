@@ -820,7 +820,7 @@ function App() {
             ? p.enabled
             : adminFilter === "inactivos"
             ? !p.enabled
-            : p.lowStock;
+            : p.stock > 0 && p.stock <= lowStockThreshold;
         return matchCat && matchSearch && matchFilter;
       })
       .sort((a, b) =>
@@ -5014,7 +5014,7 @@ _Maxikiosko Blanqui_`,
                           Stock: {p.stock}
                         </span>
                       )}
-                      {p.lowStock && p.enabled && (
+                      {p.enabled && p.stock > 0 && p.stock <= lowStockThreshold && (
                         <span
                           style={{ fontSize: 10, background: "#FFF3E0", color: "#FF6F00", padding: "1px 5px", borderRadius: 4, fontWeight: 700, }}
                         >
