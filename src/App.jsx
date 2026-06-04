@@ -2610,7 +2610,7 @@ _Maxikiosko Blanqui_`,
                     </div>
                     {/* Lista */}
                     <div style={{ overflowY: "auto", flex: 1, padding: "8px 12px" }}>
-                      {products.filter(p => p.stock > 0 && p.stock <= lowStockThreshold).sort((a,b) => a.stock - b.stock).map(p => (
+                      {products.filter(p => p.enabled && p.stock > 0 && p.stock <= lowStockThreshold).sort((a,b) => a.stock - b.stock).map(p => (
                         <div key={p.id} style={{ background: p.enabled ? "#FFF8F3" : "#F8F8F8", border: `1.5px solid ${p.enabled ? "#FFD0A8" : "#E0E0E0"}`, borderRadius: 12, padding: "10px 12px", marginBottom: 8 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             {/* Emoji + nombre */}
@@ -2667,7 +2667,7 @@ _Maxikiosko Blanqui_`,
                           )}
                         </div>
                       ))}
-                      {products.filter(p => p.stock > 0 && p.stock <= lowStockThreshold).length === 0 && (
+                      {products.filter(p => p.enabled && p.stock > 0 && p.stock <= lowStockThreshold).length === 0 && (
                         <div style={{ textAlign: "center", color: "#AAA", fontSize: 13, padding: "30px 0" }}>¡Todo en orden! No hay productos con poco stock.</div>
                       )}
                     </div>
