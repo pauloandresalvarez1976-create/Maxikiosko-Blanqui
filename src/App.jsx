@@ -313,6 +313,7 @@ function App() {
   });
   const [showLoyaltyConfig, setShowLoyaltyConfig] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showLowStockList, setShowLowStockList] = useState(false);
   const [contactBanner, setContactBanner] = usePersist("contactBanner", {
     name: "Maxikiosko Blanqui",
     sub: "Bebidas · Golosinas · Cigarrillos · Art. de Limpieza",
@@ -2568,18 +2569,100 @@ _Maxikiosko Blanqui_`,
         </div>
 
         {/* Alerta stock bajo */}
-        {products.filter(p => p.enabled && p.stock > 0 && p.stock <= lowStockThreshold).length > 0 && (
-          <div style={{ margin: "8px 14px 0", background: "#FFF3E0", borderRadius: 12, padding: "10px 14px", border: "1.5px solid #FFB74D" }}>
-            <div style={{ fontWeight: 800, fontSize: 12, color: "#E65100", marginBottom: 6 }}>
-              ⚠️ {products.filter(p => p.enabled && p.stock > 0 && p.stock <= lowStockThreshold).length} productos con poco stock
-            </div>
-            {products.filter(p => p.enabled && p.stock > 0 && p.stock <= lowStockThreshold).slice(0,3).map(p => (
-              <div key={p.id} style={{ fontSize: 11, color: "#888", marginBottom: 2 }}>
-                {p.emoji} {p.name} — <strong style={{ color: "#E65100" }}>{p.stock} unidades</strong>
+        {(() => {
+          const lowStockProducts = products.filter(p => p.enabled && p.stock > 0 && p.stock <= lowStockThreshold).sort((a, b) => a.stock - b.stock);
+          if (lowStockProducts.length === 0) return null;
+          return (
+            <>
+              <div
+                onClick={() => setShowLowStockList(true)}
+                style={{ margin: "8px 14px 0", background: "#FFF3E0", borderRadius: 12, padding: "10px 14px", border: "1.5px solid #FFB74D", cursor: "pointer" }}
+              >
+                <div style={{ fontWeight: 800, fontSize: 12, color: "#E65100", marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>⚠️ {lowStockProducts.length} productos con poco stock</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#FF6F00", textDecoration: "underline" }}>Ver todos →</span>
+                </div>
+                {lowStockProducts.slice(0, 3).map(p => (
+                  <div key={p.id} style={{ fontSize: 11, color: "#888", marginBottom: 2 }}>
+                    {p.emoji} {p.name} — <strong style={{ color: "#E65100" }}>{p.stock} unidades</strong>
+                  </div>
+                ))}
+                {lowStockProducts.length > 3 && (
+                  <div style={{ fontSize: 11, color: "#FF6F00", fontWeight: 700, marginTop: 4 }}>
+                    + {lowStockProducts.length - 3} más...
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+
+              {/* Modal lista completa con edición de stock */}
+              {showLowStockList && (() => {
+                const updateStock = (id, newStock) => {
+                  const val = Math.max(0, parseInt(newStock) || 0);
+                  setProducts(prev => prev.map(p => p.id === id ? { ...p, stock: val } : p));
+                };
+                return (
+                  <div
+                    onClick={() => setShowLowStockList(false)}
+                    style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 3000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+                  >
+                    <div
+                      onClick={e => e.stopPropagation()}
+                      style={{ background: "#fff", borderRadius: "18px 18px 0 0", width: "100%", maxWidth: 480, maxHeight: "80vh", display: "flex", flexDirection: "column", overflow: "hidden" }}
+                    >
+                      {/* Header */}
+                      <div style={{ padding: "14px 16px 10px", borderBottom: "1px solid #FFE0B2", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FFF3E0" }}>
+                        <div>
+                          <div style={{ fontWeight: 900, fontSize: 15, color: "#E65100" }}>⚠️ Poco stock</div>
+                          <div style={{ fontSize: 11, color: "#888", marginTop: 1 }}>{lowStockProducts.length} productos con {lowStockThreshold} unidades o menos</div>
+                        </div>
+                        <button
+                          onClick={() => setShowLowStockList(false)}
+                          style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#888", lineHeight: 1 }}
+                        >✕</button>
+                      </div>
+                      {/* Lista */}
+                      <div style={{ overflowY: "auto", flex: 1, padding: "8px 0" }}>
+                        {lowStockProducts.map(p => (
+                          <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", borderBottom: "1px solid #F5F5F5", gap: 8 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
+                              <span style={{ fontSize: 20, flexShrink: 0 }}>{p.emoji}</span>
+                              <div style={{ minWidth: 0 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: "#222", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</div>
+                                <div style={{ fontSize: 11, color: "#888" }}>{p.category}</div>
+                              </div>
+                            </div>
+                            {/* Control de stock */}
+                            <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                              <button
+                                onClick={() => updateStock(p.id, p.stock - 1)}
+                                style={{ width: 28, height: 28, borderRadius: 8, border: "1.5px solid #DDD", background: "#F5F5F5", fontSize: 16, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#555", lineHeight: 1 }}
+                              >−</button>
+                              <input
+                                type="number"
+                                min="0"
+                                value={p.stock}
+                                onChange={e => updateStock(p.id, e.target.value)}
+                                style={{ width: 46, height: 28, textAlign: "center", border: "1.5px solid " + (p.stock <= 1 ? "#C62828" : "#FFB74D"), borderRadius: 8, fontSize: 13, fontWeight: 900, color: p.stock <= 1 ? "#C62828" : "#E65100", background: p.stock <= 1 ? "#FFEBEE" : "#FFF8F0", outline: "none" }}
+                              />
+                              <button
+                                onClick={() => updateStock(p.id, p.stock + 1)}
+                                style={{ width: 28, height: 28, borderRadius: 8, border: "1.5px solid #DDD", background: "#F5F5F5", fontSize: 16, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#555", lineHeight: 1 }}
+                              >+</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Footer info */}
+                      <div style={{ padding: "10px 16px", borderTop: "1px solid #F0F0F0", background: "#FAFAFA", fontSize: 11, color: "#AAA", textAlign: "center" }}>
+                        Los cambios se guardan automáticamente
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </>
+          );
+        })()}
 
         {/* Admin Tabs */}
         {(() => {
