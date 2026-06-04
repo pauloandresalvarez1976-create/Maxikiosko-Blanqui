@@ -2624,12 +2624,10 @@ _Maxikiosko Blanqui_`,
                               {p.stock} u.
                             </span>
                             {/* Toggle activo */}
-                            <button
-                              onClick={() => toggleProduct(p.id)}
-                              style={{ background: p.enabled ? "#1A7A2E" : "#E0E0E0", border: "none", borderRadius: 20, padding: "5px 12px", color: "#fff", fontWeight: 800, fontSize: 11, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}
-                            >
-                              {p.enabled ? "Activo" : "Inactivo"}
-                            </button>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
+                              <Toggle value={p.enabled} onChange={() => toggleProduct(p.id)} />
+                              <span style={{ fontSize: 9, fontWeight: 700, color: p.enabled ? "#1A7A2E" : "#AAA" }}>{p.enabled ? "Activo" : "Inactivo"}</span>
+                            </div>
                           </div>
                           {/* Editar stock inline */}
                           {lowStockEditId === p.id ? (
