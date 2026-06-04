@@ -6404,54 +6404,45 @@ _Maxikiosko Blanqui_`,
               </div>
             </div>
 
-            {/* Botón de soporte WhatsApp */}
+            {/* Botón de soporte WhatsApp — editable */}
             <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #E8F5EC" }}>
-              <div style={{ fontWeight: 800, fontSize: 13, color: "#333", marginBottom: 4 }}>💬 Botón de soporte WhatsApp</div>
-              <div style={{ fontSize: 11, color: "#888", marginBottom: 12, lineHeight: 1.5 }}>
-                Aparece en la sección de Contacto para que los clientes te escriban directo.
-                El número se toma de <strong>Ajustes → WhatsApp</strong>.
-              </div>
-              <div style={{ background: whatsappConfig?.enabled && whatsappConfig?.numero ? "#E8F5EC" : "#FFF3E0", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 20 }}>{whatsappConfig?.enabled && whatsappConfig?.numero ? "✅" : "⚠️"}</span>
-                <div style={{ fontSize: 12, color: "#555", lineHeight: 1.4 }}>
-                  {whatsappConfig?.enabled && whatsappConfig?.numero
-                    ? <>Botón activo — número: <strong>+{whatsappConfig.numero}</strong></>
-                    : <>Para activar el botón, configurá el número en <strong>Ajustes → WhatsApp</strong></>
-                  }
-                </div>
-              </div>
-            </div>
-            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: mensajeDelDia.activo ? "2px solid #FF8F00" : "2px solid #EEE" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: 14, color: "#333" }}>📢 Mensaje del día</div>
-                  <div style={{ fontSize: 11, color: "#888", marginTop: 2 }}>Aparece en la tienda debajo del horario</div>
-                </div>
-                <button onClick={() => setMensajeDelDia(prev => ({ ...prev, activo: !prev.activo }))}
-                  style={{ background: mensajeDelDia.activo ? "#FF6B00" : "#E0E0E0", color: "#fff", border: "none", borderRadius: 20, padding: "8px 18px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
-                  {mensajeDelDia.activo ? "✅ Activo" : "⛔ Inactivo"}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <div style={{ fontWeight: 800, fontSize: 13, color: "#333" }}>💬 Botón de soporte WhatsApp</div>
+                <button
+                  onClick={() => setWhatsappConfig(prev => ({ ...prev, enabled: !prev.enabled }))}
+                  style={{ background: whatsappConfig?.enabled ? "#25D366" : "#E0E0E0", color: "#fff", border: "none", borderRadius: 20, padding: "6px 16px", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  {whatsappConfig?.enabled ? "✅ Activo" : "Inactivo"}
                 </button>
               </div>
-              <textarea value={mensajeDelDia.texto}
-                onChange={e => setMensajeDelDia(prev => ({ ...prev, texto: e.target.value }))}
-                placeholder="Ej: 🎉 Hoy 2x1 en todas las cervezas hasta las 20hs"
-                rows={2}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #DDD", fontSize: 13, fontFamily: "inherit", resize: "none", boxSizing: "border-box", outline: "none" }}
-              />
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-                <div style={{ fontSize: 12, color: "#666", fontWeight: 700, flexShrink: 0 }}>⏰ Vence a las:</div>
-                <input type="time" value={mensajeDelDia.hasta || ""}
-                  onChange={e => setMensajeDelDia(prev => ({ ...prev, hasta: e.target.value }))}
-                  style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1.5px solid #DDD", fontSize: 13, fontFamily: "inherit", outline: "none" }}
-                />
-                {mensajeDelDia.hasta && (
-                  <button onClick={() => setMensajeDelDia(prev => ({ ...prev, hasta: "" }))}
-                    style={{ background: "#F0F0F0", border: "none", borderRadius: 8, padding: "7px 10px", fontSize: 12, cursor: "pointer", color: "#888", fontFamily: "inherit" }}>
-                    Quitar
-                  </button>
-                )}
+              <div style={{ fontSize: 11, color: "#888", marginBottom: 10, lineHeight: 1.5 }}>
+                Aparece en la sección de Contacto para que los clientes te escriban directo.
               </div>
-              <div style={{ fontSize: 10, color: "#AAA", marginTop: 4 }}>Opcional — si ponés hora, el cliente ve un contador ⏰</div>
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#555", marginBottom: 4 }}>Número de WhatsApp (sin + ni espacios)</div>
+                <input
+                  type="tel"
+                  value={whatsappConfig?.numero || ""}
+                  onChange={e => setWhatsappConfig(prev => ({ ...prev, numero: e.target.value.replace(/\D/g, "") }))}
+                  placeholder="5492645461073"
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #DDD", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box" }}
+                />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#555", marginBottom: 4 }}>Mensaje pre-cargado al abrir WhatsApp</div>
+                <input
+                  type="text"
+                  value={whatsappConfig?.mensajeExtra || ""}
+                  onChange={e => setWhatsappConfig(prev => ({ ...prev, mensajeExtra: e.target.value }))}
+                  placeholder="Hola, necesito ayuda con mi pedido"
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #DDD", fontSize: 13, fontFamily: "inherit", boxSizing: "border-box" }}
+                />
+              </div>
+              {whatsappConfig?.numero && (
+                <div style={{ background: "#E8F5EC", borderRadius: 8, padding: "8px 12px", marginTop: 10, fontSize: 11, color: "#1A7A2E", fontWeight: 700 }}>
+                  ✅ Número configurado: +{whatsappConfig.numero}
+                </div>
+              )}
             </div>
 
             {/* Guardado automático */}
