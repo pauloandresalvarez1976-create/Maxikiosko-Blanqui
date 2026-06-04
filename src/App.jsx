@@ -8011,55 +8011,7 @@ _Maxikiosko Blanqui_`,
         )}
       </div>
 
-      {/* Banner Cerrado por horario */}
-      {!isStoreOpen && !vacaciones.activo && (() => {
-        const diasLabel = { lunes: "Lunes", martes: "Martes", miercoles: "Miércoles", jueves: "Jueves", viernes: "Viernes", sabado: "Sábado", domingo: "Domingo" };
-        const diasOrden = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
-        // Agrupar días con mismo horario
-        const grupos = [];
-        diasOrden.forEach(dia => {
-          const h = horarios[dia];
-          if (!h.abierto) return;
-          const key = h.turno2 ? `${h.apertura}-${h.cierre}+${h.apertura2}-${h.cierre2}` : `${h.apertura}-${h.cierre}`;
-          const grupo = grupos.find(g => g.key === key);
-          if (grupo) { grupo.dias.push(dia); }
-          else { grupos.push({ key, dias: [dia], apertura: h.apertura, cierre: h.cierre, turno2: h.turno2, apertura2: h.apertura2, cierre2: h.cierre2 }); }
-        });
-        return (
-          <div style={{ background: "linear-gradient(135deg, #222 0%, #444 100%)", padding: "14px 18px", display: "flex", alignItems: "flex-start", gap: 12, }}>
-            <span style={{ fontSize: 28, flexShrink: 0, marginTop: 2 }}>🔒</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 14, marginBottom: 4 }}>
-                LOCAL CERRADO
-              </div>
-              <div style={{ color: "#ccc", fontSize: 12, fontWeight: 600, marginBottom: 6 }}>
-                Podés ver el catálogo pero las compras están deshabilitadas fuera del horario de atención.
-              </div>
-              {grupos.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <div style={{ color: "#FFD700", fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 }}>
-                    🕐 Horarios de atención
-                  </div>
-                  {grupos.map((g, i) => (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.07)", borderRadius: 8, padding: "5px 10px" }}>
-                      <span style={{ color: "#eee", fontSize: 11, fontWeight: 700 }}>
-                        {g.dias.map(d => diasLabel[d].slice(0,3)).join(" · ")}
-                      </span>
-                      <span style={{ color: "#FFD700", fontSize: 11, fontWeight: 800 }}>
-                        {g.apertura} – {g.cierre}
-                        {g.turno2 && <span style={{ color: "#aaa" }}> / {g.apertura2} – {g.cierre2}</span>}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {grupos.length === 0 && (
-                <div style={{ color: "#aaa", fontSize: 11, fontWeight: 600 }}>Sin días habilitados configurados.</div>
-              )}
-            </div>
-          </div>
-        );
-      })()}
+
 
       {/* Reloj + estado del local */}
       <div style={{ margin: "10px 14px 0", background: isStoreOpen ? "linear-gradient(135deg,#1A7A2E,#2E9E46)" : "linear-gradient(135deg,#333,#555)", borderRadius: 14, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", }}>
