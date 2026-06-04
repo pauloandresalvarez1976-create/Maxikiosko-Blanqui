@@ -1474,7 +1474,7 @@ _Maxikiosko Blanqui_`,
 
   const statsEnabled = products.filter((p) => p.enabled).length;
   const statsDisabled = products.filter((p) => !p.enabled).length;
-  const statsLowStock = products.filter((p) => p.lowStock && p.enabled).length;
+  const statsLowStock = products.filter((p) => p.enabled && p.stock > 0 && p.stock <= lowStockThreshold).length;
 
   const banner = banners[bannerIdx % banners.length];
 
