@@ -74,6 +74,9 @@ function getAdminEmail() {
   return ADMIN_EMAIL_DEFAULT;
 }
 
+// ── Registro de timestamps de guardado local (para evitar race condition con Firebase) ──
+const localSaveTimestamps = {};
+
 // ── PERSISTENCIA: hook que sincroniza estado con localStorage ──
 function usePersist(key, defaultValue) {
   const [state, setState] = useState(() => {
@@ -99,6 +102,7 @@ function usePersist(key, defaultValue) {
     if (isFirstRender.current) { isFirstRender.current = false; return; }
     if (FIREBASE_KEYS.includes(key)) {
       console.log("🔥 Firebase saving:", key, Array.isArray(state) ? `(${state.length} items)` : typeof state);
+      localSaveTimestamps[key] = Date.now();
       saveToFirestore(key, state);
     }
   }, [key, state]);
@@ -565,6 +569,9 @@ function App() {
     CONFIG_KEYS.forEach(k => localStorage.removeItem("mk_" + k));
     const update = (setter, key, newVal) => {
       if (!newVal) return;
+      // Si guardamos este dato hace menos de 4 segundos, ignorar el update remoto
+      // para evitar que Firebase devuelva el valor viejo y pise los cambios del admin
+      if (localSaveTimestamps[key] && Date.now() - localSaveTimestamps[key] < 4000) return;
       setter(prev => {
         if (JSON.stringify(prev) === JSON.stringify(newVal)) return prev;
         // Para orders: nunca quitar pedidos que existen localmente pero no llegaron aún a Firebase
