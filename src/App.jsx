@@ -288,6 +288,7 @@ function App() {
       emoji: "🏪",
       bg: "#1A7A2E",
       accent: "#FFD700",
+      activo: true,
     },
     {
       title: "Ofertas Especiales",
@@ -295,6 +296,7 @@ function App() {
       emoji: "⚡",
       bg: "#CC1111",
       accent: "#FFD700",
+      activo: true,
     },
     {
       title: "Envío Gratis",
@@ -302,6 +304,7 @@ function App() {
       emoji: "🛵",
       bg: "#2E8B3A",
       accent: "#FFFFFF",
+      activo: true,
     },
   ]);
   // Sistema de fidelización: { [phone]: { name, phone, totalOrders, pendingDiscount } }
@@ -473,7 +476,8 @@ function App() {
   const [showSocialLogin, setShowSocialLogin] = useState(false);
 
   useEffect(() => {
-    const t = setInterval(() => setBannerIdx((i) => (i + 1) % 3), 4000);
+    const activeBanners = banners.filter(b => b.activo !== false);
+    const t = setInterval(() => setBannerIdx((i) => (i + 1) % (activeBanners.length || 1)), 4000);
     return () => clearInterval(t);
   }, []);
 
@@ -1493,7 +1497,8 @@ _Maxikiosko Blanqui_`,
   const statsDisabled = products.filter((p) => !p.enabled).length;
   const statsLowStock = products.filter((p) => p.enabled && p.stock > 0 && p.stock <= lowStockThreshold).length;
 
-  const banner = banners[bannerIdx % banners.length];
+  const activeBanners = banners.filter(b => b.activo !== false);
+  const banner = activeBanners[bannerIdx % (activeBanners.length || 1)] || banners[0];
 
   // ── SISTEMA DE TEMA (claro / oscuro) ──
   const DM = darkMode; // alias corto
@@ -4143,9 +4148,20 @@ _Maxikiosko Blanqui_`,
                 key={idx}
                 style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", }}
               >
+                {/* Toggle activo/inactivo */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#555" }}>Banner {idx + 1}</span>
+                  <button
+                    onClick={() => setBanners(prev => prev.map((x, i) => i === idx ? { ...x, activo: x.activo === false ? true : false } : x))}
+                    style={{ background: b.activo !== false ? "#1A7A2E" : "#CCC", border: "none", borderRadius: 20, padding: "6px 16px", fontSize: 12, fontWeight: 800, color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    {b.activo !== false ? "✅ Activo" : "⛔ Inactivo"}
+                  </button>
+                </div>
+
                 {/* Preview del banner */}
                 <div
-                  style={{ borderRadius: 10, padding: "10px 14px", marginBottom: 12, background: b.bg, display: "flex", alignItems: "center", justifyContent: "space-between", }}
+                  style={{ borderRadius: 10, padding: "10px 14px", marginBottom: 12, background: b.bg, display: "flex", alignItems: "center", justifyContent: "space-between", opacity: b.activo !== false ? 1 : 0.4 }}
                 >
                   <div>
                     <div
