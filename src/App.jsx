@@ -212,6 +212,7 @@ function App() {
   const [editingOrder, setEditingOrder] = useState(null); // pedido que se está editando
   const [showBlockedList, setShowBlockedList] = useState(false);
   const [adminTab, setAdminTab] = useState("productos"); // productos | pedidos | banners | envios | horarios
+  const [productoTab, setProductoTab] = useState("lista"); // lista | ofertas
   const [pushTitle, setPushTitle] = useState("");
   const [pushBody, setPushBody] = useState("");
   const [pushSending, setPushSending] = useState(false);
@@ -235,6 +236,7 @@ function App() {
   const [efectivoEnabled, setEfectivoEnabled] = usePersist("efectivoEnabled", true);
   const [darkMode, setDarkMode] = usePersist("darkMode", false);
   const [mpAccessToken, setMpAccessToken] = usePersist("mpAccessToken", "");
+  const [mpEnabled, setMpEnabled] = usePersist("mpEnabled", false);
   const [mpDraft, setMpDraft] = useState(mpAccessToken || "");
   const [mpSaved, setMpSaved] = useState(false);
   const [mpShow, setMpShow] = useState(false);
@@ -631,6 +633,7 @@ function App() {
       if (data.loyaltyMode) update(setLoyaltyMode, "loyaltyMode", data.loyaltyMode);
       if (data.cashbackConfig) update(setCashbackConfig, "cashbackConfig", data.cashbackConfig);
       if (data.mpAccessToken !== undefined) { setMpAccessToken(data.mpAccessToken); localStorage.setItem("mk_mpAccessToken", JSON.stringify(data.mpAccessToken)); }
+      if (data.mpEnabled !== undefined) { setMpEnabled(data.mpEnabled); localStorage.setItem("mk_mpEnabled", JSON.stringify(data.mpEnabled)); }
       if (data.deliveryETA) update(setDeliveryETA, "deliveryETA", data.deliveryETA);
       if (data.fcmTokens) setFcmTokens(data.fcmTokens);
     });
@@ -648,6 +651,7 @@ function App() {
       if (data.transferenciaConfig) update(setTransferenciaConfig, "transferenciaConfig", data.transferenciaConfig);
       if (data.cashbackConfig) update(setCashbackConfig, "cashbackConfig", data.cashbackConfig);
       if (data.mpAccessToken !== undefined) { setMpAccessToken(data.mpAccessToken); localStorage.setItem("mk_mpAccessToken", JSON.stringify(data.mpAccessToken)); }
+      if (data.mpEnabled !== undefined) { setMpEnabled(data.mpEnabled); localStorage.setItem("mk_mpEnabled", JSON.stringify(data.mpEnabled)); }
       if (data.loyaltyEnabled !== undefined) update(setLoyaltyEnabled, "loyaltyEnabled", data.loyaltyEnabled);
       if (data.loyaltyMode) update(setLoyaltyMode, "loyaltyMode", data.loyaltyMode);
       if (data.mantenimiento !== undefined) {
@@ -2171,6 +2175,7 @@ _Maxikiosko Blanqui_`,
                     <span style={{ fontSize: 22 }}>📲</span>
                     <span>Transferencias bancarias y billeteras virtuales</span>
                   </button>
+                  {mpEnabled && (
                   <button
                     onClick={() => setPaymentMethod("mercadopago")}
                     style={{ padding: "12px 8px", border: "2px solid", borderRadius: 12, fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "center", gap: 4, borderColor: paymentMethod === "mercadopago" ? "#009EE3" : "#DDD", background: paymentMethod === "mercadopago" ? "#E6F7FF" : "#FAFAFA", color: paymentMethod === "mercadopago" ? "#009EE3" : "#666", }}
@@ -2178,6 +2183,7 @@ _Maxikiosko Blanqui_`,
                     <span style={{ fontSize: 22 }}>💳</span>
                     <span>MercadoPago</span>
                   </button>
+                  )}
                 </div>
               </div>
 
@@ -4775,6 +4781,67 @@ _Maxikiosko Blanqui_`,
         {/* PRODUCTS TAB */}
         {adminTab === "productos" && (
           <>
+            {/* Subtabs: Lista | Ofertas del día */}
+            <div style={{ display: "flex", gap: 8, padding: "12px 14px 0" }}>
+              {[{ key: "lista", label: "📦 Productos" }, { key: "ofertas", label: "🔥 Ofertas del día" }].map(t => (
+                <button key={t.key} onClick={() => setProductoTab(t.key)}
+                  style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "2px solid", borderColor: productoTab === t.key ? "#1A7A2E" : "#DDD", background: productoTab === t.key ? "#E8F5EC" : "#FAFAFA", color: productoTab === t.key ? "#1A7A2E" : "#666", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Panel Ofertas del día */}
+            {productoTab === "ofertas" && (() => {
+              const productosEnOferta = products.filter(p => p.offerDiscount !== null && p.offerDiscount !== undefined);
+              return (
+                <div style={{ padding: "12px 14px" }}>
+                  {productosEnOferta.length === 0 ? (
+                    <div style={{ textAlign: "center", color: "#888", padding: "40px 0", fontSize: 14 }}>
+                      No hay productos en oferta actualmente.
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          const updated = products.map(p => ({ ...p, offerDiscount: null }));
+                          setProducts(updated);
+                          saveToFirestore("products", updated);
+                          showToast("✅ Todas las ofertas desactivadas");
+                        }}
+                        style={{ width: "100%", padding: "11px", border: "2px solid #CC1111", borderRadius: 12, background: "#FFF5F5", color: "#CC1111", fontWeight: 900, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginBottom: 12 }}
+                      >
+                        🗑️ Desactivar todas las ofertas
+                      </button>
+                      {productosEnOferta.map(p => (
+                        <div key={p.id} style={{ background: "#fff", borderRadius: 12, padding: "12px 14px", marginBottom: 10, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #FFD700", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 800, fontSize: 14, color: "#1A2E1A" }}>{p.name}</div>
+                            <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
+                              {p.offerDiscount === "2x1" ? "🎁 2x1" : `🔥 ${p.offerDiscount}% off`} — ${p.price}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const updated = products.map(x => x.id === p.id ? { ...x, offerDiscount: null } : x);
+                              setProducts(updated);
+                              saveToFirestore("products", updated);
+                              showToast(`✅ Oferta de ${p.name} desactivada`);
+                            }}
+                            style={{ background: "#FDECEA", color: "#CC1111", border: "none", borderRadius: 8, padding: "8px 12px", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+                          >
+                            Quitar oferta
+                          </button>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Lista de productos (tab original) */}
+            {productoTab === "lista" && (<>
             {/* Botón agregar nuevo producto */}
             <div style={{ padding: "12px 14px 0" }}>
               <button
@@ -5937,6 +6004,7 @@ _Maxikiosko Blanqui_`,
               </div>
             </div>
           </div>
+          </>)}
         )}
 
         {/* ── PANEL AJUSTES ── */}
@@ -5967,10 +6035,16 @@ _Maxikiosko Blanqui_`,
             </div>
 
             {/* ── MERCADOPAGO TOKEN ── */}
-            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: "2px solid #009EE3" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                <span style={{ fontSize: 22 }}>💳</span>
-                <div style={{ fontWeight: 900, fontSize: 15, color: "#1A2E1A" }}>MercadoPago — Access Token</div>
+            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: `2px solid ${mpEnabled ? "#009EE3" : "#CCC"}` }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 22 }}>💳</span>
+                  <div style={{ fontWeight: 900, fontSize: 15, color: "#1A2E1A" }}>MercadoPago — Access Token</div>
+                </div>
+                <div onClick={() => { const v = !mpEnabled; setMpEnabled(v); saveToFirestore("mpEnabled", v); }}
+                  style={{ width: 48, height: 26, borderRadius: 13, background: mpEnabled ? "#009EE3" : "#CCC", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                  <div style={{ position: "absolute", top: 3, left: mpEnabled ? 25 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
+                </div>
               </div>
               <div style={{ fontSize: 11, color: "#666", marginBottom: 12, lineHeight: 1.5 }}>
                 Pegá el Access Token de producción de tu cuenta de MercadoPago. Se guarda en Firebase y nunca es visible para los clientes.

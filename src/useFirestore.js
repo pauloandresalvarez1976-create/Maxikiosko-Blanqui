@@ -32,12 +32,12 @@ const FIREBASE_KEYS = [
   "lowStockThreshold",
   "vacaciones",
   "mantenimiento",
-  "forzarCierre",
   "ordersResetAt",
   "adminEmail",
   "transferenciaConfig",
   "fcmTokens",
   "mpAccessToken",
+  "mpEnabled",
   "slideshowImages",
 ];
 
