@@ -4841,7 +4841,8 @@ _Maxikiosko Blanqui_`,
             })()}
 
             {/* Lista de productos (tab original) */}
-            {productoTab === "lista" && (<>
+            {productoTab === "lista" && (
+            <div>
             {/* Botón agregar nuevo producto */}
             <div style={{ padding: "12px 14px 0" }}>
               <button
@@ -6004,7 +6005,7 @@ _Maxikiosko Blanqui_`,
               </div>
             </div>
           </div>
-          </>
+          </div>
           )}
         )}
 
