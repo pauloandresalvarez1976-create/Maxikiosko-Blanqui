@@ -279,6 +279,7 @@ function App() {
   });
   const [vacaciones, setVacaciones] = usePersist("vacaciones", { activo: false, desde: "", hasta: "", mensaje: "Estamos de vacaciones. ¡Volvemos pronto!" });
   const [mantenimiento, setMantenimiento] = usePersist("mantenimiento", false);
+  const [forzarCierre, setForzarCierre] = usePersist("forzarCierre", false);
   const [horariosPrevios, setHorariosPrevios] = useState(null);
   const [banners, setBanners] = usePersist("banners", [
     {
@@ -562,7 +563,7 @@ function App() {
   // ── Sincronización en tiempo real con Firebase ──
   useEffect(() => {
     // Limpiar claves de configuración del localStorage para que Firebase sea la fuente de verdad
-    const CONFIG_KEYS = ["horarios", "vacaciones", "mantenimiento", "efectivoEnabled", "transferenciaConfig",
+    const CONFIG_KEYS = ["horarios", "vacaciones", "mantenimiento", "forzarCierre", "efectivoEnabled", "transferenciaConfig",
       "whatsappConfig", "contactInfo", "contactBanner", "mensajeDelDia", "slideshowImages", "freeShippingEnabled",
       "freeShippingThreshold", "loyaltyEnabled", "loyaltyMode", "deliveryETA", "banners",
       "lowStockThreshold", "cashbackConfig"];
@@ -604,6 +605,7 @@ function App() {
       if (data.horarios) update(setHorarios, "horarios", data.horarios);
       if (data.vacaciones) update(setVacaciones, "vacaciones", data.vacaciones);
       if (data.mantenimiento !== undefined) update(setMantenimiento, "mantenimiento", data.mantenimiento);
+      if (data.forzarCierre !== undefined) { setForzarCierre(data.forzarCierre); localStorage.setItem("mk_forzarCierre", JSON.stringify(data.forzarCierre)); }
       if (data.contactInfo) update(setContactInfo, "contactInfo", data.contactInfo);
       if (data.contactBanner) update(setContactBanner, "contactBanner", data.contactBanner);
       if (data.whatsappConfig) update(setWhatsappConfig, "whatsappConfig", data.whatsappConfig);
@@ -646,6 +648,10 @@ function App() {
       if (data.mantenimiento !== undefined) {
         setMantenimiento(data.mantenimiento);
         localStorage.setItem("mk_mantenimiento", JSON.stringify(data.mantenimiento));
+      }
+      if (data.forzarCierre !== undefined) {
+        setForzarCierre(data.forzarCierre);
+        localStorage.setItem("mk_forzarCierre", JSON.stringify(data.forzarCierre));
       }
       if (data.ordersResetAt !== undefined) {
         setOrdersResetAt(data.ordersResetAt);
@@ -955,6 +961,7 @@ function App() {
   }, []);
 
   const isStoreOpen = (() => {
+    if (forzarCierre) return false;
     if (vacaciones.activo) return false;
     const diasMap = ["domingo","lunes","martes","miercoles","jueves","viernes","sabado"];
     const diaKey = diasMap[now.getDay()];
@@ -3627,6 +3634,48 @@ _Maxikiosko Blanqui_`,
               <p style={{ fontSize: 13, color: "#666", marginBottom: 16, fontWeight: 600 }}>
                 Configurá los horarios de apertura y cierre del local para cada día.
               </p>
+
+              {/* ── Switch cierre rápido ── */}
+              <div style={{
+                background: forzarCierre ? "#FFF0F0" : "#F0FFF4",
+                border: `2px solid ${forzarCierre ? "#CC1111" : "#1A7A2E"}`,
+                borderRadius: 16, padding: "14px 16px", marginBottom: 16,
+                display: "flex", alignItems: "center", gap: 14,
+              }}>
+                <span style={{ fontSize: 32 }}>{forzarCierre ? "🔴" : "🟢"}</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 900, fontSize: 15, color: forzarCierre ? "#CC1111" : "#1A7A2E" }}>
+                    {forzarCierre ? "Tienda CERRADA manualmente" : "Tienda ABIERTA"}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#777", marginTop: 2 }}>
+                    {forzarCierre
+                      ? "Los clientes ven la tienda cerrada sin importar el horario"
+                      : "Funciona según los horarios configurados abajo"}
+                  </div>
+                </div>
+                <div
+                  onClick={() => {
+                    const nuevo = !forzarCierre;
+                    setForzarCierre(nuevo);
+                    saveToFirestore({ forzarCierre: nuevo });
+                    showToast(nuevo ? "🔴 Tienda cerrada manualmente" : "🟢 Tienda abierta");
+                  }}
+                  style={{
+                    width: 52, height: 28, borderRadius: 14,
+                    background: forzarCierre ? "#CC1111" : "#1A7A2E",
+                    cursor: "pointer", position: "relative",
+                    transition: "background 0.2s", flexShrink: 0,
+                  }}
+                >
+                  <div style={{
+                    position: "absolute", top: 4,
+                    left: forzarCierre ? 28 : 4,
+                    width: 20, height: 20, borderRadius: "50%",
+                    background: "#fff", transition: "left 0.2s",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
+                  }} />
+                </div>
+              </div>
 
               {/* Resumen rápido */}
               <div style={{ background: "#E8F5E9", borderRadius: 14, padding: "13px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
