@@ -637,6 +637,7 @@ function App() {
 
     // Listener en tiempo real
     const unsubscribe = subscribeToFirestore((data) => {
+      if (data.banners) update(setBanners, "banners", data.banners);
       if (data.orders) update(setOrders, "orders", data.orders);
       if (data.products) update(setProducts, "products", data.products.map(p => ({ ...p, cashback: p.cashback === false ? false : true })));
       if (data.customers) update(setCustomers, "customers", data.customers);
