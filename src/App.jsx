@@ -3657,7 +3657,7 @@ _Maxikiosko Blanqui_`,
                   onClick={() => {
                     const nuevo = !forzarCierre;
                     setForzarCierre(nuevo);
-                    saveToFirestore({ forzarCierre: nuevo });
+                    saveToFirestore("forzarCierre", nuevo);
                     showToast(nuevo ? "🔴 Tienda cerrada manualmente" : "🟢 Tienda abierta");
                   }}
                   style={{
