@@ -5341,7 +5341,7 @@ _Maxikiosko Blanqui_`,
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
 
         {/* EDIT PRODUCT MODAL */}
@@ -6007,6 +6007,7 @@ _Maxikiosko Blanqui_`,
           </div>
           </div>
           )}
+          </>
         )}
 
         {/* ── PANEL AJUSTES ── */}
