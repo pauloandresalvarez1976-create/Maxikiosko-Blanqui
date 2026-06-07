@@ -1499,7 +1499,7 @@ _Maxikiosko Blanqui_`,
   const statsLowStock = products.filter((p) => p.enabled && p.stock > 0 && p.stock <= lowStockThreshold).length;
 
   const activeBanners = banners.filter(b => b.activo !== false);
-  const banner = activeBanners[bannerIdx % (activeBanners.length || 1)] || banners[0];
+  const banner = activeBanners.length > 0 ? activeBanners[bannerIdx % activeBanners.length] : null;
 
   // ── SISTEMA DE TEMA (claro / oscuro) ──
   const DM = darkMode; // alias corto
@@ -8043,7 +8043,7 @@ _Maxikiosko Blanqui_`,
       )}
 
       {/* Banner */}
-      {!search && (
+      {!search && banner && (
         <div
           style={{ background: banner.bg, padding: "16px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", transition: "background 0.5s", }}
         >
