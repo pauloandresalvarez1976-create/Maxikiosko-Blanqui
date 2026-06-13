@@ -575,7 +575,7 @@ function App() {
       "lowStockThreshold", "cashbackConfig"];
     CONFIG_KEYS.forEach(k => localStorage.removeItem("mk_" + k));
     const update = (setter, key, newVal) => {
-      if (!newVal) return;
+      if (newVal === undefined || newVal === null) return;
       // Si guardamos este dato hace menos de 4 segundos, ignorar el update remoto
       // para evitar que Firebase devuelva el valor viejo y pise los cambios del admin
       if (localSaveTimestamps[key] && Date.now() - localSaveTimestamps[key] < 4000) return;
