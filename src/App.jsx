@@ -281,6 +281,7 @@ function App() {
   });
   const [vacaciones, setVacaciones] = usePersist("vacaciones", { activo: false, desde: "", hasta: "", mensaje: "Estamos de vacaciones. ¡Volvemos pronto!" });
   const [mantenimiento, setMantenimiento] = usePersist("mantenimiento", false);
+  const [miposSyncEnabled, setMiposSyncEnabled] = usePersist("miposSyncEnabled", false);
   const [forzarCierre, setForzarCierre] = usePersist("forzarCierre", false);
   const [horariosPrevios, setHorariosPrevios] = useState(null);
   const [banners, setBanners] = usePersist("banners", [
@@ -571,7 +572,7 @@ function App() {
     // Limpiar claves de configuración del localStorage para que Firebase sea la fuente de verdad
     const CONFIG_KEYS = ["horarios", "vacaciones", "mantenimiento", "forzarCierre", "efectivoEnabled", "transferenciaConfig",
       "whatsappConfig", "contactInfo", "contactBanner", "mensajeDelDia", "slideshowImages", "freeShippingEnabled",
-      "freeShippingThreshold", "loyaltyEnabled", "loyaltyMode", "deliveryETA", "banners",
+      "freeShippingThreshold", "loyaltyEnabled", "loyaltyMode", "deliveryETA", "banners", "miposSyncEnabled",
       "lowStockThreshold", "cashbackConfig"];
     CONFIG_KEYS.forEach(k => localStorage.removeItem("mk_" + k));
     const update = (setter, key, newVal) => {
@@ -611,6 +612,7 @@ function App() {
       if (data.horarios) update(setHorarios, "horarios", data.horarios);
       if (data.vacaciones) update(setVacaciones, "vacaciones", data.vacaciones);
       if (data.mantenimiento !== undefined) update(setMantenimiento, "mantenimiento", data.mantenimiento);
+      if (data.miposSyncEnabled !== undefined) update(setMiposSyncEnabled, "miposSyncEnabled", data.miposSyncEnabled);
       if (data.forzarCierre !== undefined) { setForzarCierre(data.forzarCierre); localStorage.setItem("mk_forzarCierre", JSON.stringify(data.forzarCierre)); }
       if (data.contactInfo) update(setContactInfo, "contactInfo", data.contactInfo);
       if (data.contactBanner) update(setContactBanner, "contactBanner", data.contactBanner);
@@ -6013,6 +6015,28 @@ _Maxikiosko Blanqui_`,
         {adminTab === "ajustes" && (
           <div style={{ padding: "16px 14px 40px" }}>
             <div style={{ fontWeight: 900, fontSize: 17, color: "#222", marginBottom: 18 }}>⚙️ Ajustes del sistema</div>
+
+            {/* ── SINCRONIZACIÓN CON MiPOS ── */}
+            <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: `2px solid ${miposSyncEnabled ? "#1565c0" : "#EEE"}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 22 }}>🔗</span>
+                <span style={{ fontWeight: 900, fontSize: 15, color: "#1A2E1A" }}>Sincronización con MiPOS</span>
+              </div>
+              <div style={{ background: miposSyncEnabled ? "#E3F2FD" : "#F9F9F9", border: `2px solid ${miposSyncEnabled ? "#1565c0" : "#DDD"}`, borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: 13, color: miposSyncEnabled ? "#1565c0" : "#888" }}>
+                    {miposSyncEnabled ? "🔵 MiPOS controla los productos" : "⭕ Tienda autónoma"}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#AAA", marginTop: 3 }}>
+                    {miposSyncEnabled ? "Precios, stock y disponibilidad se sincronizan desde MiPOS" : "Administrá los productos directamente desde esta app"}
+                  </div>
+                </div>
+                <div onClick={() => { const v = !miposSyncEnabled; setMiposSyncEnabled(v); saveToFirestore("miposSyncEnabled", v); }}
+                  style={{ width: 48, height: 26, borderRadius: 13, background: miposSyncEnabled ? "#1565c0" : "#CCC", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                  <div style={{ position: "absolute", top: 3, left: miposSyncEnabled ? 25 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
+                </div>
+              </div>
+            </div>
 
             {/* ── MODO MANTENIMIENTO ── */}
             <div style={{ background: "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: `2px solid ${mantenimiento ? "#F9A825" : "#EEE"}` }}>
