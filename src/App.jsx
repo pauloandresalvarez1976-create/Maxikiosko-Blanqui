@@ -141,23 +141,6 @@ function App() {
   const [adminPassInput, setAdminPassInput] = useState("");
   const [adminPassError, setAdminPassError] = useState(false);
 
-  useEffect(() => {
-    if (!mantenimiento || isAdmin) return; // solo activo en pantalla de mantenimiento
-    const handleKey = (e) => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-      const newBuffer = (secretBuffer + e.key).slice(-5).toUpperCase();
-      setSecretBuffer(newBuffer);
-      if (newBuffer === "ADMIN") {
-        setSecretBuffer("");
-        setShowAdminPass(true);
-        setAdminPassInput("");
-        setAdminPassError(false);
-      }
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [secretBuffer, mantenimiento, isAdmin]);
-
   const handleAdminPassSubmit = () => {
     if (adminPassInput === "BLANQUI1234") {
       setShowAdminPass(false);
@@ -390,6 +373,24 @@ function App() {
   const isAdmin =
     loggedUser?.handle?.toLowerCase().trim() === (adminEmail || ADMIN_EMAIL_DEFAULT).toLowerCase()
     || loggedUser?.isAdmin === true;
+
+  // ── Acceso secreto: useEffect movido aquí para que isAdmin ya esté declarado ──
+  useEffect(() => {
+    if (!mantenimiento || isAdmin) return; // solo activo en pantalla de mantenimiento
+    const handleKey = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      const newBuffer = (secretBuffer + e.key).slice(-5).toUpperCase();
+      setSecretBuffer(newBuffer);
+      if (newBuffer === "ADMIN") {
+        setSecretBuffer("");
+        setShowAdminPass(true);
+        setAdminPassInput("");
+        setAdminPassError(false);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [secretBuffer, mantenimiento, isAdmin]);
 
   // ── Firebase Cloud Messaging (FCM) — notificaciones push reales ──
   useEffect(() => {
