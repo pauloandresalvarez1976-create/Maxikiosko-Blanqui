@@ -8017,7 +8017,7 @@ _Maxikiosko Blanqui_`,
                     style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 20, padding: "6px 10px", color: "#fff", fontSize: 13, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4, fontWeight: 700, }}
                   >
                     {loggedUser.provider === "google" ? "🔵" : loggedUser.provider === "facebook" ? "💙" : "🟣"}
-                    {loggedUser.name.split(" ")[0]}
+                    {(loggedUser.name || loggedUser.handle || "Usuario").split(" ")[0]}
                   </button>
                   <button
                     onClick={() => { setLoggedUser(null); setClientName(""); showToast("👋 Sesión cerrada"); }}
