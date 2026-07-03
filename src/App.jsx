@@ -388,7 +388,8 @@ function App() {
   });
   // isAdmin debe estar definido antes de los useEffect que lo usan en el array de deps
   const isAdmin =
-    loggedUser?.handle?.toLowerCase().trim() === (adminEmail || ADMIN_EMAIL_DEFAULT).toLowerCase();
+    loggedUser?.handle?.toLowerCase().trim() === (adminEmail || ADMIN_EMAIL_DEFAULT).toLowerCase()
+    || loggedUser?.isAdmin === true;
 
   // ── Firebase Cloud Messaging (FCM) — notificaciones push reales ──
   useEffect(() => {
