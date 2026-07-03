@@ -135,6 +135,40 @@ function App() {
   const [cart, setCart] = usePersist("cart", []);
   const [view, setView] = useState("shop");
 
+  // ── Acceso secreto: escribir ADMIN en cualquier pantalla ──
+  const [secretBuffer, setSecretBuffer] = useState("");
+  const [showAdminPass, setShowAdminPass] = useState(false);
+  const [adminPassInput, setAdminPassInput] = useState("");
+  const [adminPassError, setAdminPassError] = useState(false);
+
+  useEffect(() => {
+    if (!mantenimiento || isAdmin) return; // solo activo en pantalla de mantenimiento
+    const handleKey = (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      const newBuffer = (secretBuffer + e.key).slice(-5).toUpperCase();
+      setSecretBuffer(newBuffer);
+      if (newBuffer === "ADMIN") {
+        setSecretBuffer("");
+        setShowAdminPass(true);
+        setAdminPassInput("");
+        setAdminPassError(false);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [secretBuffer, mantenimiento, isAdmin]);
+
+  const handleAdminPassSubmit = () => {
+    if (adminPassInput === "BLANQUI1234") {
+      setShowAdminPass(false);
+      setAdminPassInput("");
+      setLoggedUser({ handle: adminEmail, isAdmin: true });
+      setView("admin");
+    } else {
+      setAdminPassError(true);
+    }
+  };
+
   // ── Botón atrás del celular → siempre va a Tienda ──
   const navigateTo = (newView) => {
     if (newView !== "shop") {
@@ -7570,9 +7604,44 @@ _Maxikiosko Blanqui_`,
   }
 
   // ── CONTACT VIEW ──
+  // ── Modal contraseña admin (acceso secreto ADMIN) ──
+  const adminPassModal = showAdminPass && (
+    <div style={{ position: "fixed", inset: 0, background: "#000000cc", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={() => setShowAdminPass(false)}>
+      <div style={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: 16, padding: 32, width: 340, maxWidth: "95vw" }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>🔐</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Acceso administrador</div>
+        </div>
+        <input
+          type="password"
+          autoFocus
+          value={adminPassInput}
+          onChange={e => { setAdminPassInput(e.target.value); setAdminPassError(false); }}
+          onKeyDown={e => e.key === "Enter" && handleAdminPassSubmit()}
+          placeholder="Contraseña"
+          style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: adminPassError ? "1px solid #e63946" : "1px solid #444", background: "#111", color: "#fff", fontSize: 14, boxSizing: "border-box", marginBottom: 8, outline: "none" }}
+        />
+        {adminPassError && <div style={{ color: "#e63946", fontSize: 12, marginBottom: 8 }}>⚠ Contraseña incorrecta</div>}
+        <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+          <button onClick={() => setShowAdminPass(false)}
+            style={{ flex: 1, padding: 10, background: "#222", border: "1px solid #444", color: "#aaa", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>
+            Cancelar
+          </button>
+          <button onClick={handleAdminPassSubmit}
+            style={{ flex: 2, padding: 10, background: "#1565c0", border: "none", color: "#fff", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
+            Ingresar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   // ── Pantalla de mantenimiento para clientes ──
   if (mantenimiento && !isAdmin) return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #1A7A2E 0%, #0d4a1a 100%)", padding: 32, textAlign: "center" }}>
+      {adminPassModal}
       <div style={{ fontSize: 80, marginBottom: 24 }}>🔧</div>
       <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginBottom: 12 }}>Estamos mejorando la app</div>
       <div style={{ fontSize: 16, color: "rgba(255,255,255,0.8)", marginBottom: 8, maxWidth: 300, lineHeight: 1.6 }}>
@@ -7850,6 +7919,8 @@ _Maxikiosko Blanqui_`,
   return (
     <div style={S.app}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap'); *{box-sizing:border-box;margin:0;padding:0} ::-webkit-scrollbar{display:none} @keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}} @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+
+      {adminPassModal}
 
       {/* Header */}
       <div style={S.header}>
