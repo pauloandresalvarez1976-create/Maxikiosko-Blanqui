@@ -227,6 +227,8 @@ function App() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showBlockedAlert, setShowBlockedAlert] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null); // pedido que se está editando
+  const [editOrderProductSearch, setEditOrderProductSearch] = useState(""); // texto buscador agregar producto
+  const [editOrderProductListOpen, setEditOrderProductListOpen] = useState(false); // mostrar/ocultar dropdown buscador
   const [showBlockedList, setShowBlockedList] = useState(false);
   const [adminTab, setAdminTab] = useState("productos"); // productos | pedidos | banners | envios | horarios
   const [productoTab, setProductoTab] = useState("lista"); // lista | ofertas
@@ -6798,11 +6800,11 @@ _Maxikiosko Blanqui_`,
       {/* ── Modal editar pedido ── */}
       {editingOrder && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
-          onClick={e => { if (e.target === e.currentTarget) setEditingOrder(null); }}>
+          onClick={e => { if (e.target === e.currentTarget) { setEditingOrder(null); setEditOrderProductSearch(""); setEditOrderProductListOpen(false); } }}>
           <div style={{ background: "#fff", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 500, maxHeight: "90vh", overflowY: "auto", padding: "20px 16px 40px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
               <div style={{ fontWeight: 900, fontSize: 17 }}>✏️ Editar pedido</div>
-              <button onClick={() => setEditingOrder(null)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
+              <button onClick={() => { setEditingOrder(null); setEditOrderProductSearch(""); setEditOrderProductListOpen(false); }} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#999" }}>✕</button>
             </div>
 
             {/* Cliente */}
@@ -6855,21 +6857,49 @@ _Maxikiosko Blanqui_`,
 
             {/* Agregar producto */}
             <div style={{ fontWeight: 800, fontSize: 12, color: "#666", marginBottom: 6 }}>➕ AGREGAR PRODUCTO</div>
-            <select onChange={e => {
-              const p = products.find(pr => pr.id === e.target.value);
-              if (!p) return;
-              setEditingOrder(o => {
-                const exists = o.items.findIndex(it => it.id === p.id);
-                if (exists >= 0) return { ...o, items: o.items.map((it, i) => i === exists ? { ...it, qty: it.qty + 1 } : it) };
-                return { ...o, items: [...o.items, { id: p.id, name: p.name, price: p.price, qty: 1 }] };
-              });
-              e.target.value = "";
-            }} defaultValue="" style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #DDD", fontSize: 13, fontFamily: "inherit", marginBottom: 16, outline: "none" }}>
-              <option value="">— Seleccioná un producto —</option>
-              {products.filter(p => p.enabled).sort((a,b) => a.name.localeCompare(b.name)).map(p => (
-                <option key={p.id} value={p.id}>{p.name} — ${p.price.toLocaleString("es-AR")}</option>
-              ))}
-            </select>
+            <div style={{ position: "relative", marginBottom: 16 }}>
+              <input
+                type="text"
+                value={editOrderProductSearch}
+                onChange={e => { setEditOrderProductSearch(e.target.value); setEditOrderProductListOpen(true); }}
+                onFocus={() => setEditOrderProductListOpen(true)}
+                placeholder="🔎 Buscar producto por nombre..."
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #DDD", fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+              />
+              {editOrderProductListOpen && (
+                <div
+                  style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#fff", border: "1.5px solid #DDD", borderRadius: 10, maxHeight: 220, overflowY: "auto", zIndex: 20, boxShadow: "0 6px 20px rgba(0,0,0,0.12)" }}
+                >
+                  {products
+                    .filter(p => p.enabled)
+                    .filter(p => p.name.toLowerCase().includes(editOrderProductSearch.toLowerCase()))
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .slice(0, 50)
+                    .map(p => (
+                      <div
+                        key={p.id}
+                        onClick={() => {
+                          setEditingOrder(o => {
+                            const exists = o.items.findIndex(it => it.id === p.id);
+                            if (exists >= 0) return { ...o, items: o.items.map((it, i) => i === exists ? { ...it, qty: it.qty + 1 } : it) };
+                            return { ...o, items: [...o.items, { id: p.id, name: p.name, price: p.price, qty: 1 }] };
+                          });
+                          setEditOrderProductSearch("");
+                          setEditOrderProductListOpen(false);
+                        }}
+                        style={{ padding: "9px 12px", fontSize: 13, cursor: "pointer", borderBottom: "1px solid #F2F2F2", display: "flex", justifyContent: "space-between", gap: 8 }}
+                        onMouseDown={e => e.preventDefault()}
+                      >
+                        <span>{p.name}</span>
+                        <span style={{ fontWeight: 800, color: "#1A7A2E", whiteSpace: "nowrap" }}>${p.price.toLocaleString("es-AR")}</span>
+                      </div>
+                    ))}
+                  {products.filter(p => p.enabled).filter(p => p.name.toLowerCase().includes(editOrderProductSearch.toLowerCase())).length === 0 && (
+                    <div style={{ padding: "10px 12px", fontSize: 13, color: "#999" }}>Sin resultados</div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Total */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderTop: "2px solid #F0F0F0", marginBottom: 16 }}>
@@ -6886,6 +6916,8 @@ _Maxikiosko Blanqui_`,
                 const total = editingOrder.items.reduce((s, it) => s + it.price * it.qty, 0);
                 setOrders(prev => prev.map(o => o.id === editingOrder.id ? { ...editingOrder, total } : o));
                 setEditingOrder(null);
+                setEditOrderProductSearch("");
+                setEditOrderProductListOpen(false);
                 showToast("✅ Pedido actualizado");
               }}
               style={{ width: "100%", padding: "14px 0", background: "#1A7A2E", color: "#fff", border: "none", borderRadius: 12, fontWeight: 900, fontSize: 16, cursor: "pointer", fontFamily: "inherit" }}
