@@ -947,7 +947,11 @@ function App() {
   };
 
   const cartCount = cart.reduce((s, i) => s + (i.byWeight ? 1 : i.qty), 0);
-  const cartTotal = cart.reduce((s, i) => s + (i.byWeight ? Math.round(i.price * (i.grams || i.qty) / 1000) : i.price * i.qty), 0);
+  const cartTotal = cart.reduce((s, i) => {
+    if (i.byWeight) return s + Math.round(i.price * (i.grams || i.qty) / 1000);
+    if (i.offerDiscount === "2x1") return s + i.price * Math.ceil(i.qty / 2);
+    return s + i.price * i.qty;
+  }, 0);
   const updateCartQty = (id, d) =>
     setCart((prev) =>
       prev.map((i) => {
