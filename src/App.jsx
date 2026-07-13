@@ -611,13 +611,13 @@ function App() {
     const CONFIG_KEYS = ["horarios", "vacaciones", "mantenimiento", "forzarCierre", "efectivoEnabled", "transferenciaConfig",
       "whatsappConfig", "contactInfo", "contactBanner", "mensajeDelDia", "slideshowImages", "freeShippingEnabled",
       "freeShippingThreshold", "loyaltyEnabled", "loyaltyMode", "deliveryETA", "banners", "miposSyncEnabled",
-      "lowStockThreshold", "cashbackConfig"];
+      "lowStockThreshold", "cashbackConfig", "products"];
     CONFIG_KEYS.forEach(k => localStorage.removeItem("mk_" + k));
     const update = (setter, key, newVal) => {
       if (newVal === undefined || newVal === null) return;
       // Si guardamos este dato hace menos de 4 segundos, ignorar el update remoto
       // para evitar que Firebase devuelva el valor viejo y pise los cambios del admin
-      if (localSaveTimestamps[key] && Date.now() - localSaveTimestamps[key] < 4000) return;
+      if (key !== "products" && localSaveTimestamps[key] && Date.now() - localSaveTimestamps[key] < 4000) return;
       setter(prev => {
         if (JSON.stringify(prev) === JSON.stringify(newVal)) return prev;
         // Para orders: nunca quitar pedidos que existen localmente pero no llegaron aún a Firebase
