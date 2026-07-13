@@ -58,7 +58,7 @@ export default function ProductImage({ product, size = 90 }) {
             style={{ width: 20, height: 20, border: "2.5px solid #1A7A2E", borderTop: "2.5px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", }}
           />
         </div>
-        <span style={{ opacity: 0.3 }}>{product.emoji}</span>
+        <span style={{ opacity: 0.3 }}>🛒</span>
       </div>
     );
 
@@ -67,7 +67,7 @@ export default function ProductImage({ product, size = 90 }) {
       <div
         style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center", background: "#F0FAF2", borderRadius: 10, fontSize: size * 0.44, }}
       >
-        {product.emoji}
+        🛒
       </div>
     );
 
