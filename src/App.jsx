@@ -5412,13 +5412,13 @@ _Maxikiosko Blanqui_`,
                   showToast("⚠️ No se pudo subir la foto, se guarda local");
                 }
               }
-              setProducts((prev) =>
-                prev.map((p) =>
-                  p.id === editProduct.id
-                    ? { ...p, name: editProduct.name?.trim() || p.name, price: newPrice, stock: newStock, offerDiscount: editProduct.offerDiscount ?? null, customPhoto: finalPhoto, byWeight: editProduct.byWeight ?? false, cashback: editProduct.cashback !== false }
-                    : p
-                )
+              const updatedProducts = products.map((p) =>
+                p.id === editProduct.id
+                  ? { ...p, name: editProduct.name?.trim() || p.name, price: newPrice, stock: newStock, offerDiscount: editProduct.offerDiscount ?? null, customPhoto: finalPhoto, byWeight: editProduct.byWeight ?? false, cashback: editProduct.cashback !== false }
+                  : p
               );
+              setProducts(updatedProducts);
+              saveToFirestore("products", updatedProducts);
               showToast(`✅ "${prod.name}" actualizado`);
               setEditProduct(null);
             };
