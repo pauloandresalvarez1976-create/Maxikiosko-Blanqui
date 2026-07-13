@@ -1739,6 +1739,9 @@ _Maxikiosko Blanqui_`,
                     {item.name}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+                    {item.offerDiscount === "2x1" && (
+                      <span style={{ background: "#FF6B00", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 4, padding: "1px 5px" }}>🎁 2x1</span>
+                    )}
                     {item.originalPrice && (
                       <span style={{ color: "#999", fontWeight: 600, fontSize: 11, textDecoration: "line-through" }}>
                         {fmt(item.originalPrice)}
@@ -8512,6 +8515,12 @@ _Maxikiosko Blanqui_`,
                   </span>
                 )}
                 <div style={{ marginTop: "auto" }}>
+                  {p.offerDiscount === "2x1" && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+                      <span style={{ background: "#FF6B00", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 4, padding: "1px 5px" }}>🎁 2x1</span>
+                      <span style={{ fontSize: 10, color: "#FF6B00", fontWeight: 700 }}>Llevás 2 pagás 1</span>
+                    </div>
+                  )}
                   {p.offerDiscount && p.offerDiscount !== "2x1" && (
                     <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
                       <span style={{ fontSize: 11, color: "#999", textDecoration: "line-through", fontWeight: 600 }}>{fmt(p.price)}</span>
