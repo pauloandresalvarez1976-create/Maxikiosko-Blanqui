@@ -61,15 +61,16 @@ export async function saveToFirestore(key, value) {
 
 // Agregar UN solo pedido nuevo a Firebase (sin sobreescribir los demás)
 export async function addOrderToFirestore(newOrder) {
+  const clean = JSON.parse(JSON.stringify(newOrder)); // elimina campos undefined
   try {
     await updateDoc(doc(db, "store", STORE_ID), {
-      orders: arrayUnion(newOrder),
+      orders: arrayUnion(clean),
     });
   } catch (e) {
     try {
       await setDoc(
         doc(db, "store", STORE_ID),
-        { orders: [newOrder] },
+        { orders: [clean] },
         { merge: true }
       );
     } catch (e2) {
