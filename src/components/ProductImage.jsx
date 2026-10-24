@@ -8,10 +8,16 @@ export default function ProductImage({ product, size = 90 }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Si tiene foto personalizada, usarla directamente (limpiar cache para mostrar la nueva)
+    // Las fotos sincronizadas desde MiPOS llegan como customPhoto (URL pública).
+    // photoVersion evita que el navegador conserve una versión anterior si la URL no cambia.
     if (product.customPhoto) {
       delete imgCache[product.id];
-      setSrc(product.customPhoto);
+      const photo = String(product.customPhoto);
+      const version = Number(product.photoVersion) || 0;
+      const photoSrc = version > 0 && /^https?:\/\//i.test(photo)
+        ? `${photo}${photo.includes("?") ? "&" : "?"}v=${version}`
+        : photo;
+      setSrc(photoSrc);
       setLoading(false);
       return;
     }
@@ -44,7 +50,7 @@ export default function ProductImage({ product, size = 90 }) {
     };
 
     fetchImage();
-  }, [product.id, product.customPhoto]);
+  }, [product.id, product.customPhoto, product.photoVersion]);
 
   if (loading)
     return (
