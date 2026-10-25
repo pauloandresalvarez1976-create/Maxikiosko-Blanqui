@@ -9,6 +9,25 @@ import SocialLoginModal from "./components/SocialLoginModal";
 import Confetti from "./components/Confetti";
 import ProductImage from "./components/ProductImage";
 
+const CLOUDFLARE_CATALOG_URL = "https://mipos-fotos-api.miposopuntodeventas.workers.dev/catalog";
+const CLOUDFLARE_CATALOG_TOKEN = "mk_OWLmCwzVeYibH8yhexb79diZlOZ9lfvwoNWjfn-CKl4lWwfr";
+
+async function loadCloudflareCatalog() {
+  try {
+    const response = await fetch(CLOUDFLARE_CATALOG_URL, {
+      headers: { Authorization: "Bearer " + CLOUDFLARE_CATALOG_TOKEN },
+      cache: "no-store",
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok || !Array.isArray(data.products)) return null;
+    return data;
+  } catch (error) {
+    console.warn("Cloudflare catalog unavailable; using Firebase fallback:", error);
+    return null;
+  }
+}
+
+
 const getEmoji = (cat) => EMOJI_MAP[cat] || "📦";
 
 const INITIAL_PRODUCTS = RAW_PRODUCTS.map((p) => ({
@@ -134,6 +153,8 @@ function App() {
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 768);
   const [cart, setCart] = usePersist("cart", []);
   const [view, setView] = useState("shop");
+  const cloudflareCatalogActiveRef = useRef(false);
+  const cloudflareCatalogSkipWriteRef = useRef(false);
 
   // ── Acceso secreto: escribir ADMIN en cualquier pantalla ──
   const [secretBuffer, setSecretBuffer] = useState("");
@@ -638,14 +659,21 @@ function App() {
     };
 
     // Cargar datos de Firebase al iniciar
-    loadFromFirestore().then(data => {
+    loadCloudflareCatalog().then(cloudCatalog => {
+      if (cloudCatalog) {
+        cloudflareCatalogActiveRef.current = true;
+        cloudflareCatalogSkipWriteRef.current = true;
+        update(setProducts, "products", cloudCatalog.products.map(p => ({ ...p, cashback: p.cashback === false ? false : true })));
+      }
+      return loadFromFirestore();
+    }).then(data => {
       if (!data) return;
       if (data.ordersResetAt !== undefined) {
         setOrdersResetAt(data.ordersResetAt);
         localStorage.setItem("mk_ordersResetAt", JSON.stringify(data.ordersResetAt));
       }
       if (data.orders) update(setOrders, "orders", data.orders);
-      if (data.products) update(setProducts, "products", data.products.map(p => ({ ...p, cashback: p.cashback === false ? false : true })));
+      if (data.products && !cloudflareCatalogActiveRef.current) update(setProducts, "products", data.products.map(p => ({ ...p, cashback: p.cashback === false ? false : true })));
       if (data.customers) update(setCustomers, "customers", data.customers);
       if (data.horarios) update(setHorarios, "horarios", data.horarios);
       if (data.vacaciones) update(setVacaciones, "vacaciones", data.vacaciones);
@@ -682,7 +710,7 @@ function App() {
     const unsubscribe = subscribeToFirestore((data) => {
       if (data.banners) update(setBanners, "banners", data.banners);
       if (data.orders) update(setOrders, "orders", data.orders);
-      if (data.products) update(setProducts, "products", data.products.map(p => ({ ...p, cashback: p.cashback === false ? false : true })));
+      if (data.products && !cloudflareCatalogActiveRef.current) update(setProducts, "products", data.products.map(p => ({ ...p, cashback: p.cashback === false ? false : true })));
       if (data.customers) update(setCustomers, "customers", data.customers);
       if (data.horarios) update(setHorarios, "horarios", data.horarios);
       if (data.vacaciones) update(setVacaciones, "vacaciones", data.vacaciones);
@@ -710,6 +738,7 @@ function App() {
 
     return () => unsubscribe();
   }, []);
+
 
   // ── WHATSAPP ──
   const generarMensajeWA = (order) => {
