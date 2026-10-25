@@ -13,17 +13,25 @@ const CLOUDFLARE_CATALOG_URL = "https://mipos-fotos-api.miposopuntodeventas.work
 const CLOUDFLARE_CATALOG_TOKEN = "mk_OWLmCwzVeYibH8yhexb79diZlOZ9lfvwoNWjfn-CKl4lWwfr";
 
 async function loadCloudflareCatalog() {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
   try {
     const response = await fetch(CLOUDFLARE_CATALOG_URL, {
       headers: { Authorization: "Bearer " + CLOUDFLARE_CATALOG_TOKEN },
       cache: "no-store",
+      signal: controller.signal,
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.ok || !Array.isArray(data.products)) return null;
+    // Una respuesta vacía de una migración incompleta no debe borrar la vista:
+    // usar Firebase como respaldo hasta que Cloudflare tenga un catálogo publicado.
+    if (Number(data.catalog_version || 0) === 0 && data.products.length === 0) return null;
     return data;
   } catch (error) {
     console.warn("Cloudflare catalog unavailable; using Firebase fallback:", error);
     return null;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
