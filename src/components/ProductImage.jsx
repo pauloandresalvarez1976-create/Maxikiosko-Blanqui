@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 // Cache de imágenes a nivel de módulo (compartido entre todas las instancias)
 const imgCache = {};
 
-export default function ProductImage({ product, size = 90 }) {
+export default function ProductImage({ product, size = 90, className = "" }) {
   const [src, setSrc] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -55,6 +55,7 @@ export default function ProductImage({ product, size = 90 }) {
   if (loading)
     return (
       <div
+        className={className}
         style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center", background: "#F0FAF2", borderRadius: 10, position: "relative", fontSize: size * 0.44, }}
       >
         <div
@@ -71,6 +72,7 @@ export default function ProductImage({ product, size = 90 }) {
   if (!src)
     return (
       <div
+        className={className}
         style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center", background: "#F0FAF2", borderRadius: 10, fontSize: size * 0.44, }}
       >
         🛒
@@ -79,6 +81,7 @@ export default function ProductImage({ product, size = 90 }) {
 
   return (
     <img
+      className={className}
       src={src}
       alt={product.name}
       style={{ width: size, height: size, objectFit: "contain", borderRadius: 10, background: "#f9f9f9", padding: 2, }}

@@ -943,7 +943,7 @@ function App() {
   }, [products, adminCat, adminSearch, adminFilter]);
 
   // ── Paginación admin ──
-  const ADMIN_PAGE_SIZE = 50;
+  const ADMIN_PAGE_SIZE = 20;
   const adminTotalPages = Math.max(1, Math.ceil(adminFiltered.length / ADMIN_PAGE_SIZE));
   const adminPaged = adminFiltered.slice(
     (adminPage - 1) * ADMIN_PAGE_SIZE,
@@ -5157,7 +5157,7 @@ _Maxikiosco Blanqui_`,
                 {/* Fila 1: contador + activar/desactivar + botón seleccionar */}
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                   <span style={{ fontSize: 12, color: "#666", fontWeight: 600 }}>
-                    {adminFiltered.length} productos
+                    {adminFiltered.length} productos · {ADMIN_PAGE_SIZE} por página
                   </span>
                   <button
                     onClick={() => toggleAll(adminFiltered.map((p) => p.id), true)}
@@ -5226,10 +5226,11 @@ _Maxikiosco Blanqui_`,
             )}
 
             {/* Product list */}
-            <div style={{ paddingBottom: 24 }}>
+            <div className="admin-product-grid">
               {adminPaged.map((p) => (
                 <div
                   key={p.id}
+                  className={`admin-product-card ${p.enabled ? "is-enabled" : "is-disabled"} ${selectMode && selectedProductIds.has(p.id) ? "is-selected" : ""}`}
                   onClick={selectMode ? () => {
                     setSelectedProductIds(prev => {
                       const next = new Set(prev);
@@ -5240,22 +5241,23 @@ _Maxikiosco Blanqui_`,
                   } : undefined}
                   style={{
                     background: selectMode && selectedProductIds.has(p.id) ? "#F3E5F5" : p.enabled ? "#fff" : "#FAFAFA",
-                    margin: "5px 14px",
-                    borderRadius: 12,
-                    padding: "10px 14px",
-                    display: "flex",
+                    margin: 0,
+                    borderRadius: 20,
+                    padding: 14,
+                    display: "grid",
                     alignItems: "center",
-                    gap: 10,
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-                    opacity: p.enabled ? 1 : 0.65,
-                    borderLeft: `3px solid ${selectMode && selectedProductIds.has(p.id) ? "#6A1B9A" : p.enabled ? "#00A650" : "#CCC"}`,
+                    gap: 12,
+                    boxShadow: "0 14px 30px rgba(0,0,0,0.22)",
+                    opacity: 1,
+                    border: `1px solid ${selectMode && selectedProductIds.has(p.id) ? "#A78BFA" : p.enabled ? "rgba(130,229,209,.34)" : "rgba(255,129,145,.5)"}`,
                     cursor: selectMode ? "pointer" : "default",
-                    transition: "background 0.15s",
+                    transition: "transform 0.18s, border-color 0.18s, box-shadow 0.18s",
                   }}
                 >
                   {selectMode && (
                     <input
                       type="checkbox"
+                      className="admin-product-select"
                       checked={selectedProductIds.has(p.id)}
                       onClick={e => e.stopPropagation()}
                       onChange={e => {
@@ -5270,14 +5272,14 @@ _Maxikiosco Blanqui_`,
                       style={{ width: 18, height: 18, accentColor: "#6A1B9A", cursor: "pointer", flexShrink: 0 }}
                     />
                   )}
-                  <ProductImage product={p} size={32} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{ fontWeight: 700, fontSize: 12, color: p.enabled ? "#1A2E1A" : "#888", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", }}
+                  <ProductImage product={p} size={100} className="admin-product-photo" />
+                  <div className="admin-product-meta" style={{ flex: 1, minWidth: 0 }}>
+                    <div className="admin-product-name"
+                      style={{ fontWeight: 800, fontSize: 14, color: p.enabled ? "#1A2E1A" : "#888", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", }}
                     >
                       {p.name}
                     </div>
-                    <div
+                    <div className="admin-product-badges"
                       style={{ display: "flex", gap: 6, marginTop: 2, flexWrap: "wrap", }}
                     >
                       <span
@@ -5309,7 +5311,8 @@ _Maxikiosco Blanqui_`,
                       )}
                     </div>
                   </div>
-                  <button
+                  <div className="admin-product-actions">
+                  <button className="admin-product-action-edit"
                     onClick={() =>
                       setEditProduct({
                         id: p.id,
@@ -5327,21 +5330,25 @@ _Maxikiosco Blanqui_`,
                   >
                     ✏️
                   </button>
-                  <button
+                  <button className="admin-product-action-delete"
                     onClick={() => setConfirmDelete({ id: p.id, name: p.name })}
                     style={{ background: "#FDECEA", border: "none", borderRadius: 8, padding: "6px 9px", fontSize: 13, cursor: "pointer", color: "#CC1111", fontWeight: 800, flexShrink: 0, }}
                     title="Eliminar producto"
                   >
                     🗑️
                   </button>
-                  <Toggle
-                    value={p.enabled}
-                    onChange={() => toggleProduct(p.id)}
-                  />
+                  <div className="admin-product-toggle-control">
+                    <span className={`admin-product-status ${p.enabled ? "is-on" : "is-off"}`}>{p.enabled ? "Visible en tienda" : "Pausado"}</span>
+                    <Toggle
+                      value={p.enabled}
+                      onChange={() => toggleProduct(p.id)}
+                    />
+                  </div>
+                  </div>
                 </div>
               ))}
               {adminFiltered.length > ADMIN_PAGE_SIZE && (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, padding: "14px 14px 24px", flexWrap: "wrap" }}>
+                <div className="admin-product-pagination" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 6, padding: "14px 14px 24px", flexWrap: "wrap" }}>
                   <button
                     onClick={() => setAdminPage((p) => Math.max(1, p - 1))}
                     disabled={adminPage === 1}
@@ -5367,6 +5374,7 @@ _Maxikiosco Blanqui_`,
                       ) : (
                         <button
                           key={n}
+                          className={adminPage === n ? "is-current" : ""}
                           onClick={() => setAdminPage(n)}
                           style={{ width: 36, height: 36, border: "none", borderRadius: 10, fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit", background: adminPage === n ? "#FFD700" : "#F0FAF2", color: adminPage === n ? "#1A7A2E" : "#666", boxShadow: adminPage === n ? "0 2px 6px rgba(0,86,179,0.2)" : "none" }}
                         >
