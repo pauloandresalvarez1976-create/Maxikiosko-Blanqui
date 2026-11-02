@@ -4532,24 +4532,22 @@ _Maxikiosco Blanqui_`,
 
         {/* ORDERS TAB */}
         {adminTab === "pedidos" && (
-          <div style={{ paddingBottom: 24 }}>
+          <div className="admin-orders-panel" style={{ paddingBottom: 24 }}>
             {orders.length > 0 && (
               <div style={{ padding: "10px 14px 4px" }}>
-                <input type="text" placeholder="🔍 Buscar por nombre, teléfono o #pedido..."
+                <input className="admin-orders-search" type="text" placeholder="🔍 Buscar por nombre, teléfono o #pedido..."
                   value={orderSearch} onChange={e => setOrderSearch(e.target.value)}
                   style={{ width: "100%", padding: "9px 14px", borderRadius: 20, border: "1.5px solid #E0F0E5", fontSize: 13, fontFamily: "inherit", outline: "none", background: "#F8FFF9", boxSizing: "border-box" }}
                 />
               </div>
             )}
             {orders.length === 0 ? (
-              <div
-                style={{ textAlign: "center", padding: "50px 20px", color: "#999", }}
-              >
-                <div style={{ fontSize: 52 }}>📋</div>
-                <div style={{ fontWeight: 700, marginTop: 10, fontSize: 15 }}>
+              <div className="admin-orders-empty" style={{ textAlign: "center", padding: "50px 20px", color: "#999", }}>
+                <div className="admin-orders-empty-icon" style={{ fontSize: 52 }}>📋</div>
+                <div className="admin-orders-empty-title" style={{ fontWeight: 700, marginTop: 10, fontSize: 15 }}>
                   No hay pedidos todavía
                 </div>
-                <div style={{ fontSize: 13, marginTop: 6 }}>
+                <div className="admin-orders-empty-copy" style={{ fontSize: 13, marginTop: 6 }}>
                   Los pedidos confirmados aparecerán acá
                 </div>
               </div>
@@ -4563,6 +4561,7 @@ _Maxikiosco Blanqui_`,
               }).map((order) => (
                 <div
                   key={order.id}
+                  className={`admin-order-card status-${order.status || "nuevo"}`}
                   style={{
                     margin: "8px 14px", borderRadius: 16, overflow: "hidden",
                     boxShadow: order.status === "nuevo" ? "0 4px 16px rgba(204,17,17,0.13)" :
@@ -4587,6 +4586,7 @@ _Maxikiosco Blanqui_`,
                 >
                   {/* Order header */}
                   <div
+                    className="admin-order-header"
                     style={{
                       padding: "12px 14px",
                       display: "flex",
@@ -4603,12 +4603,13 @@ _Maxikiosco Blanqui_`,
                   >
                     <div>
                       <div
+                        className="admin-order-client-name"
                         style={{ fontWeight: 900, fontSize: 14, color: "#1A2E1A", }}
                       >
                         👤 {order.client.name}
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, flexWrap: "wrap" }}>
-                        <span style={{
+                        <span className="admin-order-badge admin-order-delivery" style={{
                           display: "inline-flex", alignItems: "center", gap: 4,
                           padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 800,
                           background: order.deliveryType === "delivery" ? "#E8F5EC" : "#E3F2FD",
@@ -4617,34 +4618,37 @@ _Maxikiosco Blanqui_`,
                         }}>
                           {order.deliveryType === "delivery" ? "🛵 Delivery" : "🏪 Retiro en tienda"}
                         </span>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "#F5F5F5", color: "#555" }}>
+                        <span className="admin-order-badge admin-order-payment" style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "#F5F5F5", color: "#555" }}>
                           {order.paymentMethod === "personalpay" ? "📲 Transferencia" : "💵 Efectivo"}
                         </span>
                         {order.fotoComprobante && (
                           <span
+                            className="admin-order-badge admin-order-proof"
                             onClick={() => setComprobanteModal(order.fotoComprobante)}
                             style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "#EDE7F6", color: "#5B4DB0", cursor: "pointer" }}
                           >
                             📸 Ver comprobante
                           </span>
                         )}
-                        <span style={{ fontSize: 10, color: "#AAA", marginLeft: 2 }}>📅 {order.date}</span>
+                        <span className="admin-order-date" style={{ fontSize: 10, color: "#AAA", marginLeft: 2 }}>📅 {order.date}</span>
                       </div>
                       {order.client.address && (
                         <div
+                          className="admin-order-contact-line"
                           style={{ fontSize: 11, color: "#666", marginTop: 1 }}
                         >
                           📍 {order.client.address}
                         </div>
                       )}
                       {order.client.phone && (
-                        <div style={{ fontSize: 11, color: "#666" }}>
+                        <div className="admin-order-contact-line" style={{ fontSize: 11, color: "#666" }}>
                           📱 {order.client.phone}
                         </div>
                       )}
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <div
+                        className="admin-order-total"
                         style={{ fontWeight: 900, fontSize: 16, color: "#1A7A2E", }}
                       >
                         {fmt(order.total)}
@@ -4657,20 +4661,22 @@ _Maxikiosco Blanqui_`,
                   </div>
                   {/* Items preview */}
                   <div
+                    className="admin-order-items-preview"
                     style={{ padding: "8px 14px", background: "#F5FBF6", fontSize: 12, color: "#444", borderTop: "1px solid #EEF2FF", }}
                   >
                     {order.items.slice(0, 3).map((i) => (
-                      <span key={i.id} style={{ marginRight: 10 }}>
+                      <span key={i.id} className="admin-order-item-chip" style={{ marginRight: 10 }}>
                         {i.emoji} {i.name} ×{i.qty}
                       </span>
                     ))}
                     {order.items.length > 3 && (
-                      <span style={{ color: "#999" }}>
+                      <span className="admin-order-item-more" style={{ color: "#999" }}>
                         +{order.items.length - 3} más
                       </span>
                     )}
                     {order.client.note && (
                       <div
+                        className="admin-order-customer-note"
                         style={{ marginTop: 4, color: "#888", fontStyle: "italic", }}
                       >
                         💬 {order.client.note}
@@ -4679,6 +4685,7 @@ _Maxikiosco Blanqui_`,
                   </div>
                   {/* Status selector */}
                   <div
+                    className="admin-order-controls"
                     style={{ padding: "12px 14px", display: "flex", gap: 7, flexWrap: "wrap", borderTop: `1px solid ${
                       order.status === "nuevo" ? "#FFCDD2" :
                       order.status === "en_proceso" ? "#FFE0B2" :
@@ -4686,7 +4693,7 @@ _Maxikiosco Blanqui_`,
                       order.status === "entregado" ? "#C8E6C9" : "#FFCDD2"
                     }`, alignItems: "center", background: "rgba(255,255,255,0.6)", }}
                   >
-                    <span style={{ fontSize: 11, fontWeight: 800, color: "#888", marginRight: 2 }}>Estado:</span>
+                    <span className="admin-order-controls-label" style={{ fontSize: 11, fontWeight: 800, color: "#888", marginRight: 2 }}>Estado:</span>
                     {[
                       ["nuevo",      "● Nuevo",      "#EF5350", "#fff5f5", "#FFCDD2"],
                       ["en_proceso", "● En proceso", "#FF9800", "#fff8f0", "#FFE0B2"],
@@ -4695,6 +4702,8 @@ _Maxikiosco Blanqui_`,
                     ].map(([s, label, activeColor, activeBg, activeBorder]) => (
                       <button
                         key={s}
+                        className={`admin-order-status-pill status-${s} ${order.status === s ? "is-current" : ""}`}
+                        aria-pressed={order.status === s}
                         onClick={() => updateOrderStatus(order.id, s)}
                         style={{
                           padding: order.status === s ? "6px 14px" : "5px 11px",
@@ -4717,6 +4726,7 @@ _Maxikiosco Blanqui_`,
                     {/* Botón cancelar — solo si el pedido no está ya cancelado ni entregado */}
                     {order.status !== "cancelado" && order.status !== "entregado" && (
                       <button
+                        className="admin-order-cancel"
                         onClick={() => {
                           if (window.confirm(`¿Cancelar el pedido de ${order.client?.name || "este cliente"}?\n\nSe enviará un mensaje de disculpas al cliente y se devolverá el stock.`)) {
                             updateOrderStatus(order.id, "cancelado");showToast("❌ Pedido cancelado y cliente notificado");
@@ -4728,13 +4738,14 @@ _Maxikiosco Blanqui_`,
                       </button>
                     )}
                     {order.status === "cancelado" && (
-                      <span style={{ padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 800, background: "#FDECEA", color: "#CC1111", }}>
+                      <span className="admin-order-cancelled" style={{ padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 800, background: "#FDECEA", color: "#CC1111", }}>
                         ❌ Cancelado
                       </span>
                     )}
                     {/* Botón notificar por WhatsApp según estado actual */}
                     {order.client?.phone && order.status !== "nuevo" && (
                       <button
+                        className="admin-order-whatsapp"
                         onClick={() => notificarEstadoWhatsApp(order, order.status)}
                         title="Notificar estado al cliente por WhatsApp"
                         style={{ marginLeft: 4, padding: "4px 10px", border: "none", borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", background: "#E8FDF0", color: "#25D366", display: "flex", alignItems: "center", gap: 4, }}
@@ -4744,6 +4755,7 @@ _Maxikiosco Blanqui_`,
                       </button>
                     )}
                     <button
+                      className="admin-order-edit"
                       onClick={() => { try { setEditingOrder(JSON.parse(JSON.stringify(order))); } catch(e) { setEditingOrder({...order}); } }}
                       title="Editar pedido"
                       style={{ marginLeft: "auto", background: "#E3F2FD", border: "none", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer", color: "#1565C0", fontWeight: 700, }}
@@ -4751,6 +4763,7 @@ _Maxikiosco Blanqui_`,
                       ✏️
                     </button>
                     <button
+                      className="admin-order-delete"
                       onClick={() => deleteOrder(order.id)}
                       style={{ marginLeft: 4, background: "#FDECEA", border: "none", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer", color: "#CC1111", fontWeight: 700, }}
                     >
@@ -4760,9 +4773,9 @@ _Maxikiosco Blanqui_`,
                   </div>
 
                   {/* Nota interna */}
-                  <div style={{ padding: "8px 12px", borderTop: "1px solid #F0F0F0" }}>
-                    <div style={{ fontSize: 10, fontWeight: 800, color: "#AAA", marginBottom: 4 }}>🔒 NOTA INTERNA (solo la ve el admin)</div>
-                    <input type="text" placeholder="Ej: Cliente pagó en efectivo, pendiente cambio..."
+                  <div className="admin-order-private-note" style={{ padding: "8px 12px", borderTop: "1px solid #F0F0F0" }}>
+                    <div className="admin-order-private-note-label" style={{ fontSize: 10, fontWeight: 800, color: "#AAA", marginBottom: 4 }}>🔒 NOTA INTERNA (solo la ve el admin)</div>
+                    <input className="admin-order-private-note-input" type="text" placeholder="Ej: Cliente pagó en efectivo, pendiente cambio..."
                       value={order.notaInterna || ""}
                       onChange={e => setOrders(prev => prev.map(o => o.id === order.id ? { ...o, notaInterna: e.target.value } : o))}
                       style={{ width: "100%", padding: "7px 10px", borderRadius: 8, border: "1.5px solid #EEE", fontSize: 12, fontFamily: "inherit", outline: "none", background: "#FAFAFA", boxSizing: "border-box", color: "#555" }}
