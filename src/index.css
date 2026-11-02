@@ -936,3 +936,10 @@ code {
   .new-premium-portal { border-radius:13px!important; box-shadow:0 7px 16px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.13); }
   .new-premium-menu { border-radius:12px!important; }
 }
+
+/* Evita bandas laterales: el sitio ocupa el ancho completo del viewport. */
+#root {
+  width: 100%;
+  max-width: none;
+  border-inline: 0;
+}
