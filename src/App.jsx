@@ -1651,8 +1651,14 @@ _Maxikiosco Blanqui_`,
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap'); *{box-sizing:border-box;margin:0;padding:0} ::-webkit-scrollbar{display:none}`}</style>
         <header className="new-premium-header new-premium-subpage-header">
           <button className="new-premium-brand" onClick={() => navigateTo("home")}>
-            <span className="new-premium-brand-mark">MB</span>
-            <span><strong>MAXIKIOSCO</strong><small>BLANQUI</small></span>
+            {contactBanner.logo ? (
+            <img className="new-premium-brand-logo" src={contactBanner.logo} alt={`Logo de ${contactBanner.name}`} />
+          ) : (
+            <span className="new-premium-brand-mark">{contactBanner.emoji || "MB"}</span>
+          )}
+            {!contactBanner.logo && (
+            <span><strong>{contactBanner.name || "MAXIKIOSCO BLANQUI"}</strong></span>
+          )}
           </button>
           <div className="new-premium-portal-cards">
             <button className="new-premium-portal new-premium-portal-store" onClick={() => goToShop()}>
@@ -2525,7 +2531,7 @@ _Maxikiosco Blanqui_`,
   // ── ADMIN VIEW ──
   if (view === "admin")
     return (
-      <div className="mipos-premium" style={S.app}>
+      <div className="mipos-premium admin-premium" style={S.app}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap'); *{box-sizing:border-box;margin:0;padding:0} ::-webkit-scrollbar{display:none}`}</style>
         <div style={S.header}>
           <img
@@ -7689,7 +7695,13 @@ _Maxikiosco Blanqui_`,
     <div className="new-premium-site">
       {adminPassModal}
       <header className="new-premium-header">
-        <button className="new-premium-brand" onClick={() => navigateTo("home")}><span className="new-premium-brand-mark">MB</span><span><strong>MAXIKIOSCO</strong><small>BLANQUI</small></span></button>
+        <button className="new-premium-brand" onClick={() => navigateTo("home")}>{contactBanner.logo ? (
+            <img className="new-premium-brand-logo" src={contactBanner.logo} alt={`Logo de ${contactBanner.name}`} />
+          ) : (
+            <span className="new-premium-brand-mark">{contactBanner.emoji || "MB"}</span>
+          )}{!contactBanner.logo && (
+            <span><strong>{contactBanner.name || "MAXIKIOSCO BLANQUI"}</strong></span>
+          )}</button>
         <div className="new-premium-portal-cards">
           <button className="new-premium-portal new-premium-portal-store" onClick={() => goToShop()}><span>▦</span><b>Tienda</b><small>Catálogo completo</small><i>→</i></button>
           <button className="new-premium-portal new-premium-portal-cart" onClick={() => navigateTo("cart")}><span>◫</span><b>Mi carrito</b><small>{cartCount ? `${cartCount} productos` : "Todavía vacío"}</small><i>→</i></button>
@@ -7730,8 +7742,14 @@ _Maxikiosco Blanqui_`,
       {adminPassModal}
       <header className="new-premium-header new-premium-subpage-header">
         <button className="new-premium-brand" onClick={() => navigateTo("home")}>
-          <span className="new-premium-brand-mark">MB</span>
-          <span><strong>MAXIKIOSCO</strong><small>BLANQUI</small></span>
+          {contactBanner.logo ? (
+            <img className="new-premium-brand-logo" src={contactBanner.logo} alt={`Logo de ${contactBanner.name}`} />
+          ) : (
+            <span className="new-premium-brand-mark">{contactBanner.emoji || "MB"}</span>
+          )}
+          {!contactBanner.logo && (
+            <span><strong>{contactBanner.name || "MAXIKIOSCO BLANQUI"}</strong></span>
+          )}
         </button>
         <div className="new-premium-portal-cards">
           <button className="new-premium-portal new-premium-portal-store" onClick={() => goToShop()}>
@@ -7794,8 +7812,14 @@ _Maxikiosco Blanqui_`,
       {adminPassModal}
       <header className="new-premium-header new-premium-subpage-header">
         <button className="new-premium-brand" onClick={() => navigateTo("home")}>
-          <span className="new-premium-brand-mark">MB</span>
-          <span><strong>MAXIKIOSCO</strong><small>BLANQUI</small></span>
+          {contactBanner.logo ? (
+            <img className="new-premium-brand-logo" src={contactBanner.logo} alt={`Logo de ${contactBanner.name}`} />
+          ) : (
+            <span className="new-premium-brand-mark">{contactBanner.emoji || "MB"}</span>
+          )}
+          {!contactBanner.logo && (
+            <span><strong>{contactBanner.name || "MAXIKIOSCO BLANQUI"}</strong></span>
+          )}
         </button>
         <div className="new-premium-portal-cards">
           <button className="new-premium-portal new-premium-portal-store" onClick={() => goToShop()}>
@@ -7846,8 +7870,14 @@ _Maxikiosco Blanqui_`,
         {adminPassModal}
         <header className="new-premium-header new-premium-subpage-header">
           <button className="new-premium-brand" onClick={() => navigateTo("home")}>
-            <span className="new-premium-brand-mark">MB</span>
-            <span><strong>MAXIKIOSCO</strong><small>BLANQUI</small></span>
+            {contactBanner.logo ? (
+            <img className="new-premium-brand-logo" src={contactBanner.logo} alt={`Logo de ${contactBanner.name}`} />
+          ) : (
+            <span className="new-premium-brand-mark">{contactBanner.emoji || "MB"}</span>
+          )}
+            {!contactBanner.logo && (
+            <span><strong>{contactBanner.name || "MAXIKIOSCO BLANQUI"}</strong></span>
+          )}
           </button>
           <div className="new-premium-portal-cards">
             <button className="new-premium-portal new-premium-portal-store" onClick={() => navigateTo("home")}><span>⌂</span><b>Volver al inicio</b><small>Seguí explorando</small><i>→</i></button>
@@ -7882,8 +7912,14 @@ _Maxikiosco Blanqui_`,
         {adminPassModal}
         <header className="new-premium-header new-premium-subpage-header">
           <button className="new-premium-brand" onClick={() => navigateTo("home")}>
-            <span className="new-premium-brand-mark">MB</span>
-            <span><strong>MAXIKIOSCO</strong><small>BLANQUI</small></span>
+            {contactBanner.logo ? (
+            <img className="new-premium-brand-logo" src={contactBanner.logo} alt={`Logo de ${contactBanner.name}`} />
+          ) : (
+            <span className="new-premium-brand-mark">{contactBanner.emoji || "MB"}</span>
+          )}
+            {!contactBanner.logo && (
+            <span><strong>{contactBanner.name || "MAXIKIOSCO BLANQUI"}</strong></span>
+          )}
           </button>
           <div className="new-premium-portal-cards">
             <button className="new-premium-portal new-premium-portal-store" onClick={() => navigateTo("home")}><span>⌂</span><b>Volver al inicio</b><small>Seguí explorando</small><i>→</i></button>
@@ -7915,8 +7951,14 @@ _Maxikiosco Blanqui_`,
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap'); *{box-sizing:border-box;margin:0;padding:0} ::-webkit-scrollbar{display:none}`}</style>
         <header className="new-premium-header new-premium-subpage-header">
           <button className="new-premium-brand" onClick={() => navigateTo("home")}>
-            <span className="new-premium-brand-mark">MB</span>
-            <span><strong>MAXIKIOSCO</strong><small>BLANQUI</small></span>
+            {contactBanner.logo ? (
+            <img className="new-premium-brand-logo" src={contactBanner.logo} alt={`Logo de ${contactBanner.name}`} />
+          ) : (
+            <span className="new-premium-brand-mark">{contactBanner.emoji || "MB"}</span>
+          )}
+            {!contactBanner.logo && (
+            <span><strong>{contactBanner.name || "MAXIKIOSCO BLANQUI"}</strong></span>
+          )}
           </button>
           <div className="new-premium-portal-cards">
             <button className="new-premium-portal new-premium-portal-store" onClick={() => goToShop()}>
@@ -8156,7 +8198,13 @@ _Maxikiosco Blanqui_`,
       {adminPassModal}
 
       <header className="new-premium-header new-premium-shop-header">
-        <button className="new-premium-brand" onClick={() => navigateTo("home")}><span className="new-premium-brand-mark">MB</span><span><strong>MAXIKIOSCO</strong><small>BLANQUI</small></span></button>
+        <button className="new-premium-brand" onClick={() => navigateTo("home")}>{contactBanner.logo ? (
+            <img className="new-premium-brand-logo" src={contactBanner.logo} alt={`Logo de ${contactBanner.name}`} />
+          ) : (
+            <span className="new-premium-brand-mark">{contactBanner.emoji || "MB"}</span>
+          )}{!contactBanner.logo && (
+            <span><strong>{contactBanner.name || "MAXIKIOSCO BLANQUI"}</strong></span>
+          )}</button>
         <div className="new-premium-portal-cards">
           <button className="new-premium-portal new-premium-portal-store" onClick={() => navigateTo("shop")}><span>▦</span><b>Tienda</b><small>Catálogo completo</small><i>●</i></button>
           <button className="new-premium-portal new-premium-portal-cart" onClick={() => navigateTo("cart")}><span>◫</span><b>Mi carrito</b><small>{cartCount ? `${cartCount} productos` : "Todavía vacío"}</small><i>→</i></button>
