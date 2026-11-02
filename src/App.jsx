@@ -2586,7 +2586,7 @@ _Maxikiosco Blanqui_`,
         </div>
 
         {/* Stats bar */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "12px 14px 0" }}>
+        <div className="admin-overview-stats-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, padding: "12px 14px 0" }}>
           {[
             {
               label: "Activos",
@@ -2612,13 +2612,14 @@ _Maxikiosco Blanqui_`,
           ].map((s) => (
             <div
               key={s.label}
+              className="admin-overview-stat-card"
               style={{ background: s.bg, borderRadius: 12, padding: "10px 8px", textAlign: "center", }}
             >
-              <div style={{ fontSize: 20 }}>{s.emoji}</div>
-              <div style={{ fontWeight: 900, fontSize: 20, color: s.color }}>
+              <div className="admin-overview-stat-emoji" style={{ fontSize: 20 }}>{s.emoji}</div>
+              <div className="admin-overview-stat-value" style={{ fontWeight: 900, fontSize: 20, color: s.color }}>
                 {s.val}
               </div>
-              <div style={{ fontSize: 11, color: "#666", fontWeight: 600 }}>
+              <div className="admin-overview-stat-label" style={{ fontSize: 11, color: "#666", fontWeight: 600 }}>
                 {s.label}
               </div>
             </div>
@@ -2626,16 +2627,16 @@ _Maxikiosco Blanqui_`,
         </div>
 
         {/* Visitas */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "8px 14px 0" }}>
-          <div style={{ background: "#E3F2FD", borderRadius: 12, padding: "10px 8px", textAlign: "center" }}>
-            <div style={{ fontSize: 18 }}>👁️</div>
-            <div style={{ fontWeight: 900, fontSize: 18, color: "#1565C0" }}>{visitCount.hoy||0}</div>
-            <div style={{ fontSize: 10, color: "#666", fontWeight: 600 }}>Visitas hoy</div>
+        <div className="admin-overview-visits-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "8px 14px 0" }}>
+          <div className="admin-overview-visit-card" style={{ background: "#E3F2FD", borderRadius: 12, padding: "10px 8px", textAlign: "center" }}>
+            <div className="admin-overview-stat-emoji" style={{ fontSize: 18 }}>👁️</div>
+            <div className="admin-overview-visit-value" style={{ fontWeight: 900, fontSize: 18, color: "#1565C0" }}>{visitCount.hoy||0}</div>
+            <div className="admin-overview-stat-label" style={{ fontSize: 10, color: "#666", fontWeight: 600 }}>Visitas hoy</div>
           </div>
-          <div style={{ background: "#E8F5EC", borderRadius: 12, padding: "10px 8px", textAlign: "center" }}>
-            <div style={{ fontSize: 18 }}>📊</div>
-            <div style={{ fontWeight: 900, fontSize: 18, color: "#1A7A2E" }}>{visitCount.total||0}</div>
-            <div style={{ fontSize: 10, color: "#666", fontWeight: 600 }}>Visitas totales</div>
+          <div className="admin-overview-visit-card" style={{ background: "#E8F5EC", borderRadius: 12, padding: "10px 8px", textAlign: "center" }}>
+            <div className="admin-overview-stat-emoji" style={{ fontSize: 18 }}>📊</div>
+            <div className="admin-overview-visit-value" style={{ fontWeight: 900, fontSize: 18, color: "#1A7A2E" }}>{visitCount.total||0}</div>
+            <div className="admin-overview-stat-label" style={{ fontSize: 10, color: "#666", fontWeight: 600 }}>Visitas totales</div>
           </div>
         </div>
 
@@ -2750,88 +2751,40 @@ _Maxikiosco Blanqui_`,
         {/* Admin Tabs */}
         {(() => {
           const TABS = [
-            { key: "estadisticas", emoji: "📊", label: "Estadísticas", color: "#6A1B9A", bg: "#F3E5F5" },
-            { key: "productos", emoji: "📦", label: "Productos", color: "#1A7A2E", bg: "#E8F5EC" },
-            { key: "pedidos", emoji: newOrdersCount > 0 ? "🔔" : "📋", label: newOrdersCount > 0 ? `Pedidos (${newOrdersCount} nuevo${newOrdersCount > 1 ? "s" : ""})` : "Pedidos", color: "#E65100", bg: "#FFF3E0" },
-            { key: "clientes",  emoji: "👥", label: "Clientes",  color: "#1565C0", bg: "#E3F2FD" },
-            { key: "banners",   emoji: "🖼️",  label: "Banners",   color: "#6A1B9A", bg: "#F3E5F5" },
-            { key: "horarios",  emoji: "🕐", label: "Horarios",  color: "#00695C", bg: "#E0F2F1" },
-            { key: "ajustes",   emoji: "⚙️", label: "Ajustes",   color: "#555",    bg: "#F5F5F5" },
-            { key: "contacto",  emoji: "📍", label: "Contacto",  color: "#C62828", bg: "#FFEBEE" },
+            { key: "productos", emoji: "📦", label: "Productos", description: "Catálogo, precios y stock", color: "#83f2d4", bg: "#12364a" },
+            { key: "pedidos", emoji: newOrdersCount > 0 ? "🔔" : "📋", label: "Pedidos", description: "Ventas y entregas", color: "#ffad72", bg: "#3a2a34" },
+            { key: "clientes", emoji: "👥", label: "Clientes", description: "Cuentas y actividad", color: "#9fc8ff", bg: "#182e49" },
+            { key: "banners", emoji: "🖼️", label: "Banners", description: "Imágenes y promociones", color: "#d0a9ff", bg: "#2b2443" },
+            { key: "horarios", emoji: "🕐", label: "Horarios", description: "Apertura y cierres", color: "#72e1d2", bg: "#163b43" },
+            { key: "ajustes", emoji: "⚙️", label: "Ajustes", description: "Opciones de la tienda", color: "#c8d3de", bg: "#273544" },
+            { key: "contacto", emoji: "📍", label: "Contacto", description: "Datos y canales", color: "#ff9caa", bg: "#3a2636" },
+            { key: "estadisticas", emoji: "📊", label: "Estadísticas", description: "Visitas y rendimiento", color: "#c4aaff", bg: "#2a2444" },
           ];
           return (
-            <div style={{ margin: "14px 14px 0", display: "flex", flexDirection: "column", gap: 0 }}>
-              {/* Fila 1: productos + pedidos */}
-              <style>{`
-                @keyframes pedidosPulse {
-                  0%, 100% { box-shadow: 0 0 0 0 #E6510088, 0 1px 3px rgba(0,0,0,0.06); }
-                  50% { box-shadow: 0 0 0 7px #E6510022, 0 1px 3px rgba(0,0,0,0.06); }
-                }
-                @keyframes pedidosGlow {
-                  0%, 100% { box-shadow: 0 4px 12px #E6510044; }
-                  50% { box-shadow: 0 4px 22px #E65100aa; }
-                }
-              `}</style>
-              <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                {TABS.slice(0, 2).map(t => {
-                  const active = adminTab === t.key;
-                  const hasPending = t.key === "pedidos" && newOrdersCount > 0;
-                  return (
-                    <button
-                      key={t.key}
-                      onClick={() => setAdminTab(t.key)}
-                      style={{
-                        flex: 1,
-                        display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-                        padding: "10px 6px",
-                        border: `2px solid ${active ? t.color : hasPending ? t.color : "#E8E8E8"}`,
-                        borderRadius: 14,
-                        fontWeight: 800,
-                        fontSize: 11,
-                        cursor: "pointer",
-                        fontFamily: "inherit",
-                        transition: "all 0.18s",
-                        background: active ? t.color : hasPending ? "#FFF3E0" : "#fff",
-                        color: active ? "#fff" : t.color,
-                        animation: !active && hasPending ? "pedidosPulse 1.4s ease-in-out infinite" : active && hasPending ? "pedidosGlow 1.4s ease-in-out infinite" : "none",
-                      }}
-                    >
-                      <span style={{ fontSize: 18 }}>{t.emoji}</span>
-                      <span style={{ lineHeight: 1.2 }}>{t.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              {/* Fila 2: clientes + banners + horarios */}
-              <div style={{ display: "flex", gap: 8 }}>
-                {TABS.slice(2).map(t => {
-                  const active = adminTab === t.key;
-                  return (
-                    <button
-                      key={t.key}
-                      onClick={() => setAdminTab(t.key)}
-                      style={{
-                        flex: 1,
-                        display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
-                        padding: "10px 4px",
-                        border: `2px solid ${active ? t.color : "#E8E8E8"}`,
-                        borderRadius: 14,
-                        fontWeight: 800,
-                        fontSize: 11,
-                        cursor: "pointer",
-                        fontFamily: "inherit",
-                        transition: "all 0.18s",
-                        background: active ? t.color : "#fff",
-                        color: active ? "#fff" : t.color,
-                        boxShadow: active ? `0 4px 12px ${t.color}44` : "0 1px 3px rgba(0,0,0,0.06)",
-                      }}
-                    >
-                      <span style={{ fontSize: 18 }}>{t.emoji}</span>
-                      <span style={{ lineHeight: 1.2 }}>{t.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="admin-tabs-grid">
+              <style>{`@keyframes pedidosPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,173,114,.42), 0 12px 25px rgba(0,0,0,.2); } 50% { box-shadow: 0 0 0 5px rgba(255,173,114,.12), 0 12px 25px rgba(0,0,0,.2); } } @keyframes pedidosGlow { 0%,100% { box-shadow: 0 0 18px rgba(255,173,114,.2); } 50% { box-shadow: 0 0 30px rgba(255,173,114,.42); } }`}</style>
+              {TABS.map(t => {
+                const active = adminTab === t.key;
+                const hasPending = t.key === "pedidos" && newOrdersCount > 0;
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    className={`admin-tab-card ${active ? "is-active" : ""} ${hasPending ? "has-pending" : ""}`}
+                    onClick={() => setAdminTab(t.key)}
+                    aria-pressed={active}
+                    style={{ "--admin-tab-accent": t.color, "--admin-tab-tint": t.bg }}
+                  >
+                    <span className="admin-tab-icon">{t.emoji}</span>
+                    <span className="admin-tab-copy">
+                      <strong>{t.label}</strong>
+                      <small>{t.description}</small>
+                    </span>
+                    {hasPending && <span className="admin-tab-count">{newOrdersCount}</span>}
+                    <span className="admin-tab-arrow" aria-hidden="true">→</span>
+                  </button>
+                );
+              })}
             </div>
           );
         })()}
@@ -5116,39 +5069,26 @@ _Maxikiosco Blanqui_`,
                     </button>
                   ))}
                 </div>
-                {/* Modo oscuro */}
-                <button
-                  onClick={() => setDarkMode(dm => !dm)}
-                  title={darkMode ? "Modo claro" : "Modo oscuro"}
-                  style={{ flexShrink: 0, border: "none", borderRadius: 16, padding: "6px 12px", background: darkMode ? "#FFD700" : "#E4F2E8", color: darkMode ? "#1A2E1A" : "#1A7A2E", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 5, }}
-                >
-                  {darkMode ? "☀️ Claro" : "🌙 Oscuro"}
-                </button>
+
               </div>
             </div>
 
             {/* Category filter */}
-            <div style={{ background: "#fff", marginTop: 8, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", padding: "8px 0" }}>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "0 14px" }}>
-                {ALL_CATEGORIES.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setAdminCat(c)}
-                    style={{
-                      border: `2px solid ${adminCat === c ? "#1A7A2E" : "#DDD"}`,
-                      borderRadius: 16, padding: "5px 12px",
-                      background: adminCat === c ? "#1A7A2E" : "#fff",
-                      color: adminCat === c ? "#fff" : "#555",
-                      fontWeight: adminCat === c ? 800 : 600,
-                      fontSize: 11, cursor: "pointer", whiteSpace: "nowrap",
-                      fontFamily: "inherit",
-                      boxShadow: adminCat === c ? "0 2px 6px rgba(26,122,46,0.25)" : "none",
-                    }}
-                  >
-                    {c}
-                  </button>
-                ))}
+            <div className="admin-category-filter">
+              <div className="admin-category-filter-copy">
+                <strong>▦ Categorías</strong>
+                <span>Elegí qué productos consultar</span>
               </div>
+              <select
+                className="admin-category-select"
+                aria-label="Filtrar productos por categoría"
+                value={adminCat}
+                onChange={(e) => setAdminCat(e.target.value)}
+              >
+                {ALL_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c === "Todas" ? "Todas las categorías" : c}</option>
+                ))}
+              </select>
             </div>
 
             {/* Bulk actions */}
