@@ -160,7 +160,7 @@ function App() {
   const [products, setProducts] = usePersist("products", INITIAL_PRODUCTS);
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 768);
   const [cart, setCart] = usePersist("cart", []);
-  const [view, setView] = useState("shop");
+  const [view, setView] = useState("home");
   const shippingBrands = [
     { name: "Mercado Libre", logo: "/brand-logos/mercado-libre.png", variant: "mercado-libre" },
     { name: "Adidas", logo: "/brand-logos/adidas.svg", variant: "adidas", caption: true },
@@ -7691,10 +7691,11 @@ _Maxikiosco Blanqui_`,
       <header className="new-premium-header">
         <button className="new-premium-brand" onClick={() => navigateTo("home")}><span className="new-premium-brand-mark">MB</span><span><strong>MAXIKIOSCO</strong><small>BLANQUI</small></span></button>
         <div className="new-premium-portal-cards">
-                    <button className="new-premium-portal new-premium-portal-cart" onClick={() => navigateTo("cart")}><span>◫</span><b>Mi carrito</b><small>{cartCount ? `${cartCount} productos` : "Todavía vacío"}</small><i>→</i></button>
+          <button className="new-premium-portal new-premium-portal-store" onClick={() => goToShop()}><span>▦</span><b>Tienda</b><small>Catálogo completo</small><i>→</i></button>
+          <button className="new-premium-portal new-premium-portal-cart" onClick={() => navigateTo("cart")}><span>◫</span><b>Mi carrito</b><small>{cartCount ? `${cartCount} productos` : "Todavía vacío"}</small><i>→</i></button>
           <button className="new-premium-portal new-premium-portal-contact" onClick={() => navigateTo("contact")}><span>◌</span><b>Contacto</b><small>Estamos cerca</small><i>→</i></button>
         </div>
-        <button className="new-premium-menu" onClick={() => goToShop()}>Entrar a la tienda <span>↗</span></button>
+        <button className="new-premium-menu" onClick={() => setShowSocialLogin(true)}>Iniciar sesión <span>↗</span></button>
       </header>
       <main>
         <section className="real-premium-hero">
@@ -7708,6 +7709,19 @@ _Maxikiosco Blanqui_`,
         <section className="new-premium-contact-band"><div><span>● ESTAMOS CERCA</span><h2>Si no lo encontrás,<br /><em>te ayudamos.</em></h2><p>Escribinos o acercate al local. Queremos que resolver tus compras y tus trámites sea cada vez más simple.</p></div><button onClick={() => navigateTo("contact")}>Contactanos <span>→</span></button></section>
       </main>
       {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
+      {showSocialLogin && (
+        <SocialLoginModal
+          onLogin={(user) => {
+            setLoggedUser(user);
+            requestNotificationPermission();
+            setClientName(user.name);
+            setShowSocialLogin(false);
+            showToast(`✅ ¡Bienvenido, ${user.name}!`);
+          }}
+          onClose={() => setShowSocialLogin(false)}
+          prefill={{ name: clientName }}
+        />
+      )}
     </div>
   );
 
