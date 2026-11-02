@@ -4758,16 +4758,21 @@ _Maxikiosco Blanqui_`,
                       className="admin-order-edit"
                       onClick={() => { try { setEditingOrder(JSON.parse(JSON.stringify(order))); } catch(e) { setEditingOrder({...order}); } }}
                       title="Editar pedido"
+                      aria-label="Editar pedido"
                       style={{ marginLeft: "auto", background: "#E3F2FD", border: "none", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer", color: "#1565C0", fontWeight: 700, }}
                     >
-                      ✏️
+                      <span className="admin-order-action-icon" aria-hidden="true">✏️</span>
+                      <span className="admin-order-action-label">Editar</span>
                     </button>
                     <button
                       className="admin-order-delete"
                       onClick={() => deleteOrder(order.id)}
+                      title="Eliminar pedido"
+                      aria-label="Eliminar pedido"
                       style={{ marginLeft: 4, background: "#FDECEA", border: "none", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer", color: "#CC1111", fontWeight: 700, }}
                     >
-                      🗑
+                      <span className="admin-order-action-icon" aria-hidden="true">🗑</span>
+                      <span className="admin-order-action-label">Eliminar</span>
                     </button>
 
                   </div>
