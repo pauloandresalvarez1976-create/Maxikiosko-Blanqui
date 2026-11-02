@@ -7707,7 +7707,7 @@ _Maxikiosco Blanqui_`,
           <button className="new-premium-portal new-premium-portal-cart" onClick={() => navigateTo("cart")}><span>◫</span><b>Mi carrito</b><small>{cartCount ? `${cartCount} productos` : "Todavía vacío"}</small><i>→</i></button>
           <button className="new-premium-portal new-premium-portal-contact" onClick={() => navigateTo("contact")}><span>◌</span><b>Contacto</b><small>Estamos cerca</small><i>→</i></button>
         </div>
-        <button className="new-premium-menu" onClick={() => setShowSocialLogin(true)}>Iniciar sesión <span>↗</span></button>
+        <button className="new-premium-menu" onClick={() => { if (isAdmin) setView("admin"); else if (loggedUser) navigateTo("historial"); else setShowSocialLogin(true); }}>{isAdmin ? "⚙ Administración" : loggedUser?.name || "Iniciar sesión"} <span>↗</span></button>
       </header>
       <main>
         <section className="real-premium-hero">
@@ -8210,6 +8210,7 @@ _Maxikiosco Blanqui_`,
           <button className="new-premium-portal new-premium-portal-cart" onClick={() => navigateTo("cart")}><span>◫</span><b>Mi carrito</b><small>{cartCount ? `${cartCount} productos` : "Todavía vacío"}</small><i>→</i></button>
           <button className="new-premium-portal new-premium-portal-contact" onClick={() => navigateTo("contact")}><span>◌</span><b>Contacto</b><small>Estamos cerca</small><i>→</i></button>
         </div>
+        {isAdmin && <button className="new-premium-menu" onClick={() => setView("admin")}>⚙ Administración <span>↗</span></button>}
         <button className="new-premium-menu" onClick={() => navigateTo("home")}>Volver al inicio <span>↗</span></button>
       </header>
       {/* ── PANEL DE FILTROS DESPLEGABLE ── */}
