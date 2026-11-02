@@ -271,6 +271,7 @@ function App() {
   const [editOrderProductSearch, setEditOrderProductSearch] = useState(""); // texto buscador agregar producto
   const [editOrderProductListOpen, setEditOrderProductListOpen] = useState(false); // mostrar/ocultar dropdown buscador
   const [showBlockedList, setShowBlockedList] = useState(false);
+  const [expandedClientId, setExpandedClientId] = useState(null);
   const [adminTab, setAdminTab] = useState("productos"); // productos | pedidos | banners | envios | horarios
   const [productoTab, setProductoTab] = useState("lista"); // lista | ofertas
   const [pushTitle, setPushTitle] = useState("");
@@ -3319,21 +3320,31 @@ _Maxikiosco Blanqui_`,
                         ? Math.floor((Date.now() - new Date(ultimaCompraAdmin).getTime()) / 86400000)
                         : 0;
                       const cashbackVencido = ultimaCompraAdmin && diasSinAdmin > diasVencAdmin;
+                      const clientExpandKey = c.phone || c.handle || c.name || "cliente";
+                      const clientExpanded = expandedClientId === clientExpandKey;
+                      const clientDisplayName = c.name || [c.firstName || c.nombre, c.lastName || c.apellido || c.surname].filter(Boolean).join(" ") || "Sin nombre";
                       return (
                         <div
-                          key={c.phone || c.name}
+                          key={c.phone || c.name || c.handle}
+                          className={`admin-client-card ${c.blocked ? "is-blocked" : ""} ${clientExpanded ? "is-expanded" : ""}`}
                           style={{ background: c.blocked ? "#FFF5F5" : "#fff", borderRadius: 14, padding: "14px 16px", marginBottom: 10, boxShadow: "0 2px 8px rgba(0,0,0,0.07)", border: c.blocked ? "2px solid #CC1111" : "none", }}
                         >
-                          <div
+                          <button
+                            type="button"
+                            className="admin-client-card-trigger"
+                            aria-expanded={clientExpanded}
+                            onClick={() => setExpandedClientId(clientExpanded ? null : clientExpandKey)}
                             style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8, }}
                           >
                             <div>
                               <div
+                                className="admin-client-name"
                                 style={{ fontWeight: 900, fontSize: 14, color: "#1A2E1A", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", }}
                               >
-                                👤 {c.name || "Sin nombre"}
+                                <span className="admin-client-avatar" aria-hidden="true">👤</span> {clientDisplayName}
                                 {c.blocked && (
                                   <span
+                                    className="admin-client-blocked-badge"
                                     style={{ background: "#CC1111", color: "#fff", fontSize: 9, fontWeight: 900, padding: "2px 6px", borderRadius: 6, letterSpacing: 0.5, }}
                                   >
                                     🚫 BLOQUEADO
@@ -3342,13 +3353,24 @@ _Maxikiosco Blanqui_`,
                               </div>
                               {c.phone && (
                                 <div
+                                  className="admin-client-contact-line"
                                   style={{ fontSize: 12, color: "#888", marginTop: 2, }}
                                 >
                                   📱 {c.phone}
                                 </div>
                               )}
+                              {(c.email || c.correo) && (
+                                <div className="admin-client-contact-line">✉️ {c.email || c.correo}</div>
+                              )}
+                              {c.address && (
+                                <div className="admin-client-contact-line">📍 {c.address}</div>
+                              )}
+                              {c.handle && (
+                                <div className="admin-client-contact-line">@{String(c.handle).replace(/^@/, "")}</div>
+                              )}
                               {c.lastOrder && (
                                 <div
+                                  className="admin-client-last-order"
                                   style={{ fontSize: 11, color: "#aaa", marginTop: 1, }}
                                 >
                                   Último pedido: {c.lastOrder}
@@ -3356,19 +3378,21 @@ _Maxikiosco Blanqui_`,
                               )}
                               {(c.cancelCount || 0) > 0 && (
                                 <div
+                                  className={`admin-client-cancel-count ${c.blocked ? "is-blocked" : ""}`}
                                   style={{ fontSize: 11, color: c.blocked ? "#CC1111" : "#FF6F00", marginTop: 2, fontWeight: 700, }}
                                 >
                                   ❌ {c.cancelCount} cancelacion{c.cancelCount !== 1 ? "es" : ""}
                                   {!c.blocked && c.cancelCount < 5 && (
-                                    <span style={{ color: "#888", fontWeight: 600 }}>
+                                    <span className="admin-client-cancel-hint" style={{ color: "#888", fontWeight: 600 }}>
                                       {" "}· {5 - c.cancelCount} para bloqueo
                                     </span>
                                   )}
                                 </div>
                               )}
                             </div>
-                            <div style={{ textAlign: "right" }}>
+                            <div className="admin-client-card-metrics" style={{ textAlign: "right" }}>
                               <div
+                                className="admin-client-purchases"
                                 style={{ fontWeight: 900, fontSize: 16, color: "#1A7A2E", }}
                               >
                                 {c.totalOrders || 0}{" "}
@@ -3379,55 +3403,56 @@ _Maxikiosco Blanqui_`,
                                 </span>
                               </div>
                               {cyclesDone > 0 && (
-                                <div style={{ fontSize: 11, color: "#888" }}>
+                                <div className="admin-client-cycles" style={{ fontSize: 11, color: "#888" }}>
                                   🏆 {cyclesDone} ciclo
                                   {cyclesDone !== 1 ? "s" : ""}
                                 </div>
                               )}
+                              <span className="admin-client-expand-hint">{clientExpanded ? "Cerrar ficha ↑" : "Ver acciones ↓"}</span>
                             </div>
-                          </div>
+                          </button>
 
                           {/* Progress bar */}
                           {!c.pendingDiscount && (
                             <>
                               {loyaltyMode === "cashback" ? (
                                 <>
-                                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                                    <span style={{ fontSize: 11, color: cashbackVencido ? "#E65100" : "#666", fontWeight: 600 }}>
+                                  <div className="admin-client-progress-summary" style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                                    <span className="admin-client-progress-label" style={{ fontSize: 11, color: cashbackVencido ? "#E65100" : "#666", fontWeight: 600 }}>
                                       {cashbackVencido ? "⚠️ Cashback vencido: " : "💰 Cashback acumulado: "}
                                       <span style={{ textDecoration: cashbackVencido ? "line-through" : "none" }}>
                                         ${cashbackAccum.toLocaleString("es-AR")}
                                       </span>
                                     </span>
-                                    <span style={{ fontSize: 11, color: cashbackVencido ? "#E65100" : "#1565C0", fontWeight: 700 }}>
+                                    <span className="admin-client-progress-meta" style={{ fontSize: 11, color: cashbackVencido ? "#E65100" : "#1565C0", fontWeight: 700 }}>
                                       {cashbackVencido ? `${diasSinAdmin}d sin compras` : `meta $${CASHBACK_THRESHOLD.toLocaleString("es-AR")}`}
                                     </span>
                                   </div>
-                                  <div style={{ background: "#F0F0F0", borderRadius: 99, height: 8, overflow: "hidden" }}>
-                                    <div style={{ width: cashbackVencido ? "100%" : `${cashbackPct}%`, height: "100%", background: cashbackVencido ? "linear-gradient(90deg,#FF8A65,#E64A19)" : "linear-gradient(90deg,#1565C0,#42A5F5)", borderRadius: 99, transition: "width 0.4s", opacity: cashbackVencido ? 0.5 : 1 }} />
+                                  <div className="admin-client-progress-track" style={{ background: "#F0F0F0", borderRadius: 99, height: 8, overflow: "hidden" }}>
+                                    <div className={`admin-client-progress-fill admin-client-cashback-fill ${cashbackVencido ? "is-expired" : ""}`} style={{ width: cashbackVencido ? "100%" : `${cashbackPct}%`, height: "100%", background: cashbackVencido ? "linear-gradient(90deg,#FF8A65,#E64A19)" : "linear-gradient(90deg,#1565C0,#42A5F5)", borderRadius: 99, transition: "width 0.4s", opacity: cashbackVencido ? 0.5 : 1 }} />
                                   </div>
                                   {cashbackVencido && (
-                                    <div style={{ fontSize: 10, color: "#E65100", marginTop: 3, fontWeight: 600 }}>
+                                    <div className="admin-client-expired-hint" style={{ fontSize: 10, color: "#E65100", marginTop: 3, fontWeight: 600 }}>
                                       Se reseteará en la próxima compra
                                     </div>
                                   )}
                                 </>
                               ) : loyaltyMode === "progresivo" ? (
                                 <>
-                                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                                    <span style={{ fontSize: 11, color: "#666", fontWeight: 600 }}>
+                                  <div className="admin-client-progress-summary" style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                                    <span className="admin-client-progress-label" style={{ fontSize: 11, color: "#666", fontWeight: 600 }}>
                                       Bloque {blockNum}/4 · {posInBlock}/10 · Próximo: {nextPct}%
                                     </span>
-                                    <span style={{ fontSize: 11, color: "#FF6B00", fontWeight: 700 }}>
+                                    <span className="admin-client-progress-meta" style={{ fontSize: 11, color: "#FF6B00", fontWeight: 700 }}>
                                       {10 - posInBlock} restantes
                                     </span>
                                   </div>
-                                  <div style={{ background: "#F0F0F0", borderRadius: 99, height: 8, overflow: "hidden" }}>
-                                    <div style={{ width: `${(posInBlock / 10) * 100}%`, height: "100%", background: "linear-gradient(90deg,#FF6B00,#FFD700)", borderRadius: 99, transition: "width 0.4s" }} />
+                                  <div className="admin-client-progress-track" style={{ background: "#F0F0F0", borderRadius: 99, height: 8, overflow: "hidden" }}>
+                                    <div className="admin-client-progress-fill admin-client-progress-orange" style={{ width: `${(posInBlock / 10) * 100}%`, height: "100%", background: "linear-gradient(90deg,#FF6B00,#FFD700)", borderRadius: 99, transition: "width 0.4s" }} />
                                   </div>
                                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
                                     {Array.from({ length: 10 }, (_, i) => (
-                                      <div key={i} style={{ width: 20, height: 20, borderRadius: "50%", background: i < posInBlock ? "#FF6B00" : "#E0E0E0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>
+                                      <div key={i} className={`admin-client-progress-dot ${i < posInBlock ? "is-done is-orange" : ""}`} style={{ width: 20, height: 20, borderRadius: "50%", background: i < posInBlock ? "#FF6B00" : "#E0E0E0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>
                                         {i < posInBlock && "✓"}
                                       </div>
                                     ))}
@@ -3435,20 +3460,20 @@ _Maxikiosco Blanqui_`,
                                 </>
                               ) : (
                                 <>
-                                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                                    <span style={{ fontSize: 11, color: "#666", fontWeight: 600 }}>
+                                  <div className="admin-client-progress-summary" style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                                    <span className="admin-client-progress-label" style={{ fontSize: 11, color: "#666", fontWeight: 600 }}>
                                       {progress}/10 compras hacia el descuento
                                     </span>
-                                    <span style={{ fontSize: 11, color: "#1A7A2E", fontWeight: 700 }}>
+                                    <span className="admin-client-progress-meta" style={{ fontSize: 11, color: "#1A7A2E", fontWeight: 700 }}>
                                       {10 - progress} restantes
                                     </span>
                                   </div>
-                                  <div style={{ background: "#F0F0F0", borderRadius: 99, height: 8, overflow: "hidden" }}>
-                                    <div style={{ width: `${pct}%`, height: "100%", background: "linear-gradient(90deg,#1A7A2E,#00A650)", borderRadius: 99, transition: "width 0.4s" }} />
+                                  <div className="admin-client-progress-track" style={{ background: "#F0F0F0", borderRadius: 99, height: 8, overflow: "hidden" }}>
+                                    <div className="admin-client-progress-fill admin-client-progress-green" style={{ width: `${pct}%`, height: "100%", background: "linear-gradient(90deg,#1A7A2E,#00A650)", borderRadius: 99, transition: "width 0.4s" }} />
                                   </div>
                                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
                                     {Array.from({ length: 10 }, (_, i) => (
-                                      <div key={i} style={{ width: 20, height: 20, borderRadius: "50%", background: i < progress ? "#1A7A2E" : "#E0E0E0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>
+                                      <div key={i} className={`admin-client-progress-dot ${i < progress ? "is-done is-green" : ""}`} style={{ width: 20, height: 20, borderRadius: "50%", background: i < progress ? "#1A7A2E" : "#E0E0E0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10 }}>
                                         {i < progress && "✓"}
                                       </div>
                                     ))}
@@ -3460,16 +3485,18 @@ _Maxikiosco Blanqui_`,
 
                           {c.pendingDiscount && (
                             <div
+                              className="admin-client-reward"
                               style={{ background: "linear-gradient(135deg,#FFD700,#FFA000)", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, marginTop: 4, }}
                             >
                               <span style={{ fontSize: 24 }}>🎁</span>
                               <div>
                                 <div
+                                  className="admin-client-reward-title"
                                   style={{ fontWeight: 900, fontSize: 13, color: "#1A2E1A", }}
                                 >
                                   ¡Descuento disponible!
                                 </div>
-                                <div style={{ fontSize: 12, color: "#333" }}>
+                                <div className="admin-client-reward-copy" style={{ fontSize: 12, color: "#333" }}>
                                   {loyaltyMode === "cashback"
                                     ? `$${(c.cashbackPending || 0).toLocaleString("es-AR")} de cashback en la próxima compra`
                                     : `${c.pendingDiscountPct || 10}% OFF en la próxima compra`}
@@ -3478,43 +3505,32 @@ _Maxikiosco Blanqui_`,
                             </div>
                           )}
 
-                          {/* Botones Bloquear/Desbloquear y Reset Cashback */}
-                          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                            <button
-                              onClick={() => toggleBlock(c)}
-                              style={{ flex: 1, padding: "9px 12px", background: c.blocked ? "#1A7A2E" : "#FFF3E0", color: c.blocked ? "#fff" : "#CC1111", border: c.blocked ? "none" : "1.5px solid #CC1111", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
-                            >
-                              {c.blocked ? "✅ Desbloquear cliente" : "🚫 Bloquear cliente"}
-                            </button>
-                            {loyaltyMode === "cashback" && (
-                              <button
-                                onClick={() => {
-                                  if (window.confirm(`¿Resetear el cashback de ${c.name || "este cliente"} a $0?`)) {
-                                    resetCashback(c);
-                                  }
-                                }}
-                                style={{ flex: 1, padding: "9px 12px", background: "#F3F0FF", color: "#6A1B9A", border: "1.5px solid #9C27B0", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
-                              >
-                                🔄 Resetear cashback
-                              </button>
-                            )}
-                          </div>
-                          {/* Botón cashback individual */}
-                          {loyaltyMode === "cashback" && (
-                            <button
-                              onClick={() => toggleCashbackIndividual(c)}
-                              style={{ width: "100%", marginTop: 8, padding: "9px 12px", background: c.cashbackDisabled ? "#F1F8E9" : "#FFF8E1", color: c.cashbackDisabled ? "#388E3C" : "#F57F17", border: c.cashbackDisabled ? "1.5px solid #81C784" : "1.5px solid #FFB300", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
-                            >
-                              {c.cashbackDisabled ? "💰 Activar cashback" : "🚫 Excluir del cashback"}
-                            </button>
+                          {clientExpanded && (
+                            <div className="admin-client-expanded-panel">
+                              <div className="admin-client-actions-heading">ACCIONES DEL CLIENTE</div>
+                              <div className="admin-client-action-grid">
+                                <button type="button" className={`admin-client-action admin-client-action-block ${c.blocked ? "is-blocked" : ""}`} onClick={() => toggleBlock(c)}>
+                                  <span className="admin-client-action-title">{c.blocked ? "✅ Desbloquear cliente" : "🚫 Bloquear cliente"}</span>
+                                  <small>{c.blocked ? "Restaurar el acceso" : "Impedir nuevos pedidos"}</small>
+                                </button>
+                                <button type="button" className="admin-client-action admin-client-action-reset" onClick={() => {
+                                  if (window.confirm(`¿Resetear el cashback de ${c.name || "este cliente"} a $0?`)) resetCashback(c);
+                                }}>
+                                  <span className="admin-client-action-title">🔄 Resetear cashback</span>
+                                  <small>Saldo y premio pendiente a $0</small>
+                                </button>
+                                <button type="button" className={`admin-client-action admin-client-action-cashback ${c.cashbackDisabled ? "is-excluded" : ""}`} onClick={() => toggleCashbackIndividual(c)}>
+                                  <span className="admin-client-action-title">{c.cashbackDisabled ? "💰 Incluir en cashback" : "⛔ Excluir del cashback"}</span>
+                                  <small>{c.cashbackDisabled ? "Permitir que vuelva a acumular" : "No acumular cashback"}</small>
+                                </button>
+                                <button type="button" className="admin-client-action admin-client-action-delete" onClick={() => deleteClient(c)}>
+                                  <span className="admin-client-action-title">🗑️ Eliminar cuenta</span>
+                                  <small>Eliminar registro del cliente</small>
+                                </button>
+                              </div>
+                              {loyaltyMode !== "cashback" && <div className="admin-client-cashback-hint">Las acciones de cashback se guardan y se aplican cuando la modalidad de fidelización es Cashback.</div>}
+                            </div>
                           )}
-                          {/* Botón eliminar cliente */}
-                          <button
-                            onClick={() => deleteClient(c)}
-                            style={{ width: "100%", marginTop: 8, padding: "9px 12px", background: "#FFF0F0", color: "#990000", border: "1.5px solid #FFAAAA", borderRadius: 10, fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit", }}
-                          >
-                            🗑️ Eliminar cliente
-                          </button>
                         </div>
                       );
                     })}
