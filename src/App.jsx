@@ -5214,7 +5214,9 @@ _Maxikiosco Blanqui_`,
                       style={{ width: 18, height: 18, accentColor: "#6A1B9A", cursor: "pointer", flexShrink: 0 }}
                     />
                   )}
-                  <ProductImage product={p} size={100} className="admin-product-photo" />
+                  <div className="premium-product-image admin-product-photo-frame" style={{ display: "flex", justifyContent: "center", padding: "4px 0 6px" }}>
+                    <ProductImage product={p} size={100} className="admin-product-photo" />
+                  </div>
                   <div className="admin-product-meta" style={{ flex: 1, minWidth: 0 }}>
                     <div className="admin-product-name"
                       style={{ fontWeight: 800, fontSize: 14, color: p.enabled ? "#1A2E1A" : "#888", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", }}
