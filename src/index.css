@@ -1398,7 +1398,7 @@ code {
 }
 .admin-premium select.admin-category-select option { background: #0d2b40; color: #effff9; }
 
-/* La foto se mantiene completa y centrada; el espacio sobrante se mezcla con la tarjeta. */
+/* La miniatura llena el cuadrante; las fotos de proporción extrema pueden recortar bordes. */
 .admin-premium img.admin-product-photo {
   width: 100px !important;
   height: 100px !important;
@@ -1406,7 +1406,7 @@ code {
   border: 0 !important;
   border-radius: 12px !important;
   background: transparent !important;
-  object-fit: contain !important;
+  object-fit: cover !important;
   object-position: center;
   filter: drop-shadow(0 9px 13px rgba(0,0,0,.26));
 }
@@ -1434,3 +1434,116 @@ code {
   .admin-premium .admin-tab-copy small { max-width: 128px; }
   .admin-premium .admin-product-grid { grid-template-columns: 1fr; }
 }
+
+
+/* Subapartado de Productos: navegación y comandos en tarjetas compactas. */
+.admin-premium .admin-product-subnav {
+  display: grid !important;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 10px;
+  padding: 12px clamp(12px,2vw,24px) 6px !important;
+}
+.admin-premium .admin-product-subtab {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 58px;
+  padding: 12px 16px !important;
+  border: 1px solid rgba(160,224,218,.18) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(145deg,#102c40,#0b2033) !important;
+  color: #b4cdc6 !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  text-align: left;
+  box-shadow: 0 8px 18px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.08);
+  transition: transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.admin-premium .admin-product-subtab:hover { transform: translateY(-2px); border-color: rgba(130,229,209,.4) !important; }
+.admin-premium .admin-product-subtab.is-active {
+  border-color: rgba(217,251,98,.52) !important;
+  background: radial-gradient(ellipse at 100% 0%,rgba(130,229,209,.2),transparent 60%),linear-gradient(135deg,#164454,#102b3c) !important;
+  color: #eaff87 !important;
+  box-shadow: 0 0 0 1px rgba(217,251,98,.1),0 10px 22px rgba(0,0,0,.22),0 0 20px rgba(130,229,209,.1),inset 0 1px 0 rgba(255,255,255,.12);
+}
+.admin-premium .admin-product-command-grid {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  align-items: stretch;
+  gap: 12px;
+  padding: 5px clamp(12px,2vw,24px) 12px;
+}
+.admin-premium .admin-product-command-source { display: contents !important; }
+.admin-premium .admin-command-action {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: auto !important;
+  min-width: 0;
+  min-height: 82px;
+  margin: 0 !important;
+  padding: 12px !important;
+  border: 1px solid rgba(160,224,218,.21) !important;
+  border-radius: 16px !important;
+  background: radial-gradient(ellipse at 100% 0%,rgba(130,229,209,.13),transparent 61%),linear-gradient(145deg,#102e42,#0b2033) !important;
+  color: #dff7ed !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  line-height: 1.25;
+  text-align: center;
+  white-space: normal;
+  box-shadow: 0 8px 19px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.09);
+  transition: transform .18s ease,border-color .18s ease,box-shadow .18s ease,filter .18s ease;
+}
+.admin-premium .admin-command-action:hover {
+  transform: translateY(-2px);
+  border-color: rgba(217,251,98,.48) !important;
+  box-shadow: 0 13px 24px rgba(0,0,0,.25),0 0 18px rgba(130,229,209,.1),inset 0 1px 0 rgba(255,255,255,.13);
+  filter: brightness(1.06);
+}
+.admin-premium .admin-command-add { border-color: rgba(217,251,98,.3) !important; color: #eaff87 !important; }
+.admin-premium .admin-command-delete-all { border-color: rgba(255,129,145,.33) !important; color: #ff9aa5 !important; }
+.admin-premium .admin-command-import { border-color: rgba(130,229,209,.3) !important; color: #91f0d8 !important; }
+.admin-premium .admin-command-export { border-color: rgba(159,200,255,.3) !important; color: #b4d5ff !important; }
+@media (max-width: 900px) {
+  .admin-premium .admin-product-command-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+}
+@media (max-width: 560px) {
+  .admin-premium .admin-product-subnav { gap: 8px; padding: 10px 10px 4px !important; }
+  .admin-premium .admin-product-subtab { min-height: 52px; padding: 10px 12px !important; border-radius: 14px !important; font-size: 11px !important; }
+  .admin-premium .admin-product-command-grid { gap: 8px; padding: 4px 10px 10px; }
+  .admin-premium .admin-command-action { min-height: 72px; padding: 9px !important; border-radius: 14px !important; font-size: 11px !important; }
+}
+
+
+/* Contraste de jerarquía: los comandos secundarios usan violeta/índigo, distinto del aqua/verde de secciones principales. */
+.admin-premium .admin-product-subtab {
+  border-color: rgba(184,157,255,.28) !important;
+  background: radial-gradient(ellipse at 100% 0%,rgba(186,157,255,.16),transparent 62%),linear-gradient(145deg,#30254a,#1b2340) !important;
+  color: #d1c5ef !important;
+  box-shadow: 0 8px 18px rgba(14,12,30,.26),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.admin-premium .admin-product-subtab.is-active {
+  border-color: rgba(202,181,255,.8) !important;
+  background: radial-gradient(ellipse at 100% 0%,rgba(211,190,255,.24),transparent 64%),linear-gradient(135deg,#4b3c70,#2d3156) !important;
+  color: #f1eaff !important;
+  box-shadow: 0 0 0 1px rgba(194,166,255,.16),0 10px 22px rgba(15,12,34,.32),0 0 20px rgba(176,145,255,.14),inset 0 1px 0 rgba(255,255,255,.15);
+}
+.admin-premium .admin-command-action {
+  border-color: rgba(184,157,255,.28) !important;
+  background: radial-gradient(ellipse at 100% 0%,rgba(185,157,255,.16),transparent 62%),linear-gradient(145deg,#30254a,#1b2340) !important;
+  color: #e4dcf6 !important;
+  box-shadow: 0 9px 20px rgba(14,12,30,.26),inset 0 1px 0 rgba(255,255,255,.09);
+}
+.admin-premium .admin-command-action:hover {
+  border-color: rgba(205,184,255,.67) !important;
+  box-shadow: 0 14px 25px rgba(13,10,31,.34),0 0 19px rgba(174,145,255,.15),inset 0 1px 0 rgba(255,255,255,.14);
+}
+.admin-premium .admin-command-add { border-color: rgba(217,251,98,.35) !important; color: #eaff87 !important; }
+.admin-premium .admin-command-delete-all { border-color: rgba(255,129,145,.4) !important; color: #ffabb4 !important; }
+.admin-premium .admin-command-import { border-color: rgba(130,229,209,.38) !important; color: #9ff2dc !important; }
+.admin-premium .admin-command-export { border-color: rgba(159,200,255,.42) !important; color: #bdd9ff !important; }

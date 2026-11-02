@@ -4778,9 +4778,9 @@ _Maxikiosco Blanqui_`,
         {adminTab === "productos" && (
           <>
             {/* Subtabs: Lista | Ofertas del día */}
-            <div style={{ display: "flex", gap: 8, padding: "12px 14px 0" }}>
+            <div className="admin-product-subnav">
               {[{ key: "lista", label: "📦 Productos" }, { key: "ofertas", label: "🔥 Ofertas del día" }].map(t => (
-                <button key={t.key} onClick={() => setProductoTab(t.key)}
+                <button key={t.key} className={`admin-product-subtab ${productoTab === t.key ? "is-active" : ""}`} aria-pressed={productoTab === t.key} onClick={() => setProductoTab(t.key)}
                   style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "2px solid", borderColor: productoTab === t.key ? "#1A7A2E" : "#DDD", background: productoTab === t.key ? "#E8F5EC" : "#FAFAFA", color: productoTab === t.key ? "#1A7A2E" : "#666", fontWeight: 800, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
                   {t.label}
                 </button>
@@ -4838,10 +4838,11 @@ _Maxikiosco Blanqui_`,
 
             {/* Lista de productos (tab original) */}
             {productoTab === "lista" && (
-            <div>
+            <div className="admin-product-list-view">
+            <div className="admin-product-command-grid">
             {/* Botón agregar nuevo producto */}
-            <div style={{ padding: "12px 14px 0" }}>
-              <button
+            <div className="admin-product-command-source" style={{ padding: "12px 14px 0" }}>
+              <button className="admin-command-action admin-command-add"
                 onClick={() => {
                   setNewProductForm({
                     name: "",
@@ -4862,8 +4863,8 @@ _Maxikiosco Blanqui_`,
             </div>
 
             {/* Botón Eliminar todos los productos */}
-            <div style={{ padding: "0 14px 4px" }}>
-              <button
+            <div className="admin-product-command-source" style={{ padding: "0 14px 4px" }}>
+              <button className="admin-command-action admin-command-delete-all"
                 onClick={() => setConfirmDeleteAll(true)}
                 style={{ width: "100%", padding: "11px", border: "2px dashed #CC1111", borderRadius: 12, background: "#FFF5F5", color: "#CC1111", fontWeight: 900, fontSize: 13, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, }}
               >
@@ -4872,9 +4873,9 @@ _Maxikiosco Blanqui_`,
             </div>
 
             {/* Botones Importar / Exportar — sin CDN externo ni blob URLs */}
-            <div style={{ padding: "0 14px 10px", display: "flex", gap: 8 }}>
+            <div className="admin-product-command-source" style={{ padding: "0 14px 10px", display: "flex", gap: 8 }}>
               {/* IMPORTAR CSV */}
-              <label
+              <label className="admin-command-action admin-command-import"
                 title="Importar CSV (separado por comas)"
                 style={{ flex: 1, padding: "10px 6px", border: "2px solid #1976D2", borderRadius: 12, background: "#E3F2FD", color: "#1976D2", fontWeight: 900, fontSize: 13, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "background 0.15s", userSelect: "none", }}
                 onMouseEnter={e => e.currentTarget.style.background = "#BBDEFB"}
@@ -5012,7 +5013,7 @@ _Maxikiosco Blanqui_`,
               </label>
 
               {/* EXPORTAR CSV — data URI, sin blob ni CDN */}
-              <button
+              <button className="admin-command-action admin-command-export"
                 title="Descargar lista de productos como CSV"
                 onClick={() => {
                   const headers = ["nombre","categoria","precio","costo","stock","activo","bajo_stock"];
@@ -5041,6 +5042,7 @@ _Maxikiosco Blanqui_`,
               >
                 📤 Exportar CSV
               </button>
+            </div>
             </div>
 
             {/* Search + filters */}
