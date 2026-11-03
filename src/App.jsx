@@ -653,7 +653,8 @@ function App() {
     const CONFIG_KEYS = ["horarios", "vacaciones", "mantenimiento", "forzarCierre", "efectivoEnabled", "transferenciaConfig",
       "whatsappConfig", "contactInfo", "contactBanner", "mensajeDelDia", "slideshowImages", "freeShippingEnabled",
       "freeShippingThreshold", "loyaltyEnabled", "loyaltyMode", "deliveryETA", "banners", "miposSyncEnabled",
-      "lowStockThreshold", "cashbackConfig", "products"];
+      "lowStockThreshold", "cashbackConfig"];
+    // No borrar mk_products: puede contener fotos que el catálogo remoto no está entregando.
     CONFIG_KEYS.forEach(k => localStorage.removeItem("mk_" + k));
     const update = (setter, key, newVal) => {
       if (newVal === undefined || newVal === null) return;
@@ -670,6 +671,28 @@ function App() {
         ) {
           console.warn("Firebase devolvió customers vacío; se conserva la copia local.");
           return prev;
+        }
+        if (key === "products" && Array.isArray(prev) && Array.isArray(newVal)) {
+          const localPhotos = new Map(
+            prev
+              .filter(product => product?.id != null && typeof product.customPhoto === "string" && product.customPhoto.trim())
+              .map(product => [String(product.id), product])
+          );
+          const mergedProducts = newVal.map(product => {
+            const local = product?.id != null ? localPhotos.get(String(product.id)) : null;
+            const hasRemotePhoto = typeof product?.customPhoto === "string" && product.customPhoto.trim();
+            if (!local || hasRemotePhoto) return product;
+            return {
+              ...product,
+              customPhoto: local.customPhoto,
+              ...(product.photoVersion == null && local.photoVersion != null
+                ? { photoVersion: local.photoVersion }
+                : {}),
+            };
+          });
+          if (JSON.stringify(prev) === JSON.stringify(mergedProducts)) return prev;
+          localStorage.setItem("mk_products", JSON.stringify(mergedProducts));
+          return mergedProducts;
         }
         if (JSON.stringify(prev) === JSON.stringify(newVal)) return prev;
         // Para orders: nunca quitar pedidos que existen localmente pero no llegaron aún a Firebase
