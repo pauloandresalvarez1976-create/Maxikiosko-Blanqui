@@ -2908,7 +2908,7 @@ _Maxikiosco Blanqui_`,
             };
 
             return (
-              <div style={{ padding: "14px 14px 32px" }}>
+              <div className="admin-client-panel" style={{ padding: "14px 14px 32px" }}>
 
                 {/* ── Notificación masiva ── */}
                 {(() => {
@@ -2935,7 +2935,7 @@ _Maxikiosco Blanqui_`,
                     } catch { showToast("❌ Error de red"); setPushSending(false); }
                   };
                   return (
-                    <div style={{ background: "#fff", border: "2px solid #BBDEFB", borderRadius: 16, padding: "16px", marginBottom: 14, boxShadow: "0 2px 8px rgba(21,101,192,0.08)" }}>
+                    <div className="admin-client-broadcast-card" style={{ background: "#fff", border: "2px solid #BBDEFB", borderRadius: 16, padding: "16px", marginBottom: 14, boxShadow: "0 2px 8px rgba(21,101,192,0.08)" }}>
                       <div style={{ fontWeight: 900, fontSize: 14, color: "#1565C0", marginBottom: 12 }}>🔔 Enviar notificación a todos</div>
                       <input
                         value={pushTitle}
@@ -2961,9 +2961,9 @@ _Maxikiosco Blanqui_`,
                 })()}
 
                 {/* ── Toggle Fidelización ── */}
-                <div style={{ background: loyaltyEnabled ? "linear-gradient(135deg,#1A7A2E,#2E9E46)" : "linear-gradient(135deg,#555,#777)", borderRadius: 16, padding: "14px 16px", marginBottom: loyaltyEnabled ? 8 : 16, display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 3px 10px rgba(0,0,0,0.12)", }}>
+                <div className={`admin-client-loyalty-banner ${loyaltyEnabled ? "is-enabled" : "is-disabled"}`} style={{ background: loyaltyEnabled ? "linear-gradient(135deg,#1A7A2E,#2E9E46)" : "linear-gradient(135deg,#555,#777)", borderRadius: 16, padding: "14px 16px", marginBottom: loyaltyEnabled ? 8 : 16, display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 3px 10px rgba(0,0,0,0.12)", }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 28 }}>🏆</span>
+                    <span className="admin-client-loyalty-icon" style={{ fontSize: 28 }}>🏆</span>
                     <div>
                       <div style={{ color: "#fff", fontWeight: 900, fontSize: 14, lineHeight: 1.2 }}>
                         Sistema de Fidelización
@@ -3000,8 +3000,8 @@ _Maxikiosco Blanqui_`,
 
                 {/* ── Modal Configuración Fidelización ── */}
                 {showLoyaltyConfig && (
-                  <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, }}>
-                    <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 420, padding: "24px 20px", boxShadow: "0 8px 32px rgba(0,0,0,0.25)", maxHeight: "90vh", overflowY: "auto", }}>
+                    <div className="admin-client-loyalty-overlay" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, }}>
+                    <div className="admin-client-loyalty-modal" style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 420, padding: "24px 20px", boxShadow: "0 8px 32px rgba(0,0,0,0.25)", maxHeight: "90vh", overflowY: "auto", }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                         <div style={{ fontWeight: 900, fontSize: 17, color: "#1A2E1A" }}>⚙️ Configurar Fidelización</div>
                         <button onClick={() => setShowLoyaltyConfig(false)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#666" }}>✕</button>
@@ -3009,6 +3009,7 @@ _Maxikiosco Blanqui_`,
 
                       {/* Opción 1: Simple */}
                       <div
+                        className={`admin-loyalty-choice admin-loyalty-choice-simple ${loyaltyMode === "simple" ? "is-active" : ""}`}
                         onClick={() => setLoyaltyMode("simple")}
                         style={{
                           border: `2.5px solid ${loyaltyMode === "simple" ? "#1A7A2E" : "#E0E0E0"}`,
@@ -3033,6 +3034,7 @@ _Maxikiosco Blanqui_`,
 
                       {/* Opción 2: Progresivo */}
                       <div
+                        className={`admin-loyalty-choice admin-loyalty-choice-progressive ${loyaltyMode === "progresivo" ? "is-active" : ""}`}
                         onClick={() => setLoyaltyMode("progresivo")}
                         style={{
                           border: `2.5px solid ${loyaltyMode === "progresivo" ? "#FF6B00" : "#E0E0E0"}`,
@@ -3068,6 +3070,7 @@ _Maxikiosco Blanqui_`,
 
                       {/* Opción 3: Cashback */}
                       <div
+                        className={`admin-loyalty-choice admin-loyalty-choice-cashback ${loyaltyMode === "cashback" ? "is-active" : ""}`}
                         onClick={() => setLoyaltyMode("cashback")}
                         style={{
                           border: `2.5px solid ${loyaltyMode === "cashback" ? "#1565C0" : "#E0E0E0"}`,
@@ -3150,6 +3153,7 @@ _Maxikiosco Blanqui_`,
                   </div>
                 )}
                 <div
+                  className="admin-client-stats-grid"
                   style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8, marginBottom: 16, }}
                 >
                   {[
@@ -3181,9 +3185,10 @@ _Maxikiosco Blanqui_`,
                       bg: "#FDECEA",
                       emoji: "🚫",
                     },
-                  ].map((s) => (
+                  ].map((s, index) => (
                     <div
                       key={s.label}
+                      className={`admin-client-stat-card admin-client-stat-${index}`}
                       style={{ background: s.bg, borderRadius: 12, padding: "10px 8px", textAlign: "center", }}
                     >
                       <div style={{ fontSize: 18 }}>{s.emoji}</div>
@@ -3203,6 +3208,7 @@ _Maxikiosco Blanqui_`,
 
                 {/* Panel "Bloqueo de clientes" */}
                 <div
+                  className={`admin-blocked-clients-panel ${totalBlocked > 0 ? "has-blocked" : "no-blocked"}`}
                   style={{
                     background: totalBlocked > 0 ? "#FDECEA" : "#fff",
                     border: `2px solid ${totalBlocked > 0 ? "#CC1111" : "#E0E0E0"}`,
@@ -3253,6 +3259,7 @@ _Maxikiosco Blanqui_`,
                         blockedClients.map((c) => (
                           <div
                             key={c.phone || c.name}
+                            className="admin-blocked-client-row"
                             style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center", border: "1px solid #F5C6C0", }}
                           >
                             <div style={{ minWidth: 0, flex: 1 }}>

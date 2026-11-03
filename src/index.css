@@ -1808,3 +1808,193 @@ code {
 @media(max-width:640px) { .admin-premium div.admin-client-card { padding:14px!important; border-radius:17px!important; } .admin-premium .admin-client-name { font-size:16px!important; } .admin-premium .admin-client-card-trigger { gap:9px; } .admin-premium .admin-client-card-metrics { min-width:80px; padding:6px; } .admin-premium .admin-client-purchases { font-size:17px!important; } .admin-premium .admin-client-action-grid { gap:8px; } .admin-premium button.admin-client-action { min-height:88px; padding:11px!important; border-radius:14px!important; } .admin-premium .admin-client-action-title { font-size:12px!important; } .admin-premium .admin-client-action small { font-size:10px!important; } }
 @media(max-width:420px) { .admin-premium button.admin-client-card-trigger { flex-direction:column!important; } .admin-premium .admin-client-card-metrics { width:100%; display:flex; align-items:center; justify-content:space-between; text-align:left!important; } .admin-premium .admin-client-expand-hint { margin:0; } .admin-premium .admin-client-action-grid { grid-template-columns:1fr; } .admin-premium button.admin-client-action { min-height:76px; } }
 @media(prefers-reduced-motion:reduce) { .admin-premium div.admin-client-card,.admin-premium .admin-client-expanded-panel,.admin-premium button.admin-client-action { transition:none!important; animation:none!important; } }
+
+/* Notificación masiva: panel azul eléctrico con campos y CTA de alto contraste. */
+.admin-premium div.admin-client-broadcast-card { position:relative; overflow:hidden; padding:19px!important; border:1px solid rgba(105,220,255,.65)!important; border-radius:20px!important; background:radial-gradient(ellipse at 100% 0%,rgba(46,177,255,.22),transparent 55%),linear-gradient(145deg,#123349,#0b1d2d 76%)!important; box-shadow:0 14px 32px rgba(0,0,0,.3),0 0 25px rgba(30,177,255,.16),inset 0 1px 0 rgba(255,255,255,.1)!important; }
+.admin-premium div.admin-client-broadcast-card > div:first-child { display:flex; align-items:center; gap:9px; color:#e6f9ff!important; font-size:16px!important; line-height:1.35; }
+.admin-premium div.admin-client-broadcast-card > input { min-height:46px; padding:11px 14px!important; border:1px solid rgba(113,200,231,.42)!important; border-radius:12px!important; background:rgba(4,20,31,.76)!important; color:#f3fbff!important; font-size:14px!important; box-shadow:inset 0 1px 5px rgba(0,0,0,.24); transition:border-color .18s ease,box-shadow .18s ease; }
+.admin-premium div.admin-client-broadcast-card > input::placeholder { color:#9ab5c4!important; opacity:1; }
+.admin-premium div.admin-client-broadcast-card > input:focus { border-color:#64d8ff!important; box-shadow:0 0 0 3px rgba(53,194,255,.18),0 0 18px rgba(50,183,255,.16); outline:none; }
+.admin-premium div.admin-client-broadcast-card > button { min-height:48px; border:1px solid #8cecff!important; border-radius:13px!important; background:linear-gradient(110deg,#0878b5,#13b8d3 55%,#45d8c5)!important; color:#fff!important; font-size:14px!important; font-weight:900!important; box-shadow:0 8px 22px rgba(0,163,220,.28),0 0 20px rgba(35,204,237,.19),inset 0 1px 0 rgba(255,255,255,.24); transition:filter .18s ease,transform .18s ease; }
+.admin-premium div.admin-client-broadcast-card > button:hover:not(:disabled) { filter:brightness(1.13); transform:translateY(-1px); }
+.admin-premium div.admin-client-broadcast-card > button:disabled { cursor:wait!important; filter:saturate(.55); opacity:.78; }
+
+/* Cabecera de fidelización y controles. */
+.admin-premium div.admin-client-loyalty-banner { position:relative; overflow:hidden; gap:14px; padding:17px 19px!important; border:1px solid rgba(133,245,191,.55)!important; border-radius:20px!important; background:radial-gradient(ellipse at 0% 0%,rgba(60,224,151,.25),transparent 54%),linear-gradient(120deg,#123f38,#145944 56%,#173a39)!important; box-shadow:0 12px 30px rgba(0,0,0,.28),0 0 22px rgba(54,216,144,.17),inset 0 1px 0 rgba(255,255,255,.12)!important; }
+.admin-premium div.admin-client-loyalty-banner.is-disabled { border-color:rgba(169,192,210,.4)!important; background:radial-gradient(ellipse at 0% 0%,rgba(128,157,185,.14),transparent 58%),linear-gradient(120deg,#263a4a,#182a39 60%,#202d3c)!important; box-shadow:0 12px 28px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08)!important; }
+.admin-premium .admin-client-loyalty-identity { min-width:0; gap:12px!important; }
+.admin-premium .admin-client-loyalty-icon { display:grid; place-items:center; width:48px; height:48px; flex:0 0 48px; border:1px solid rgba(170,255,212,.6); border-radius:15px; background:linear-gradient(145deg,rgba(119,247,179,.3),rgba(25,130,100,.32)); font-size:26px!important; box-shadow:0 0 18px rgba(83,237,157,.23),inset 0 1px 0 rgba(255,255,255,.2); }
+.admin-premium .admin-client-loyalty-banner.is-disabled .admin-client-loyalty-icon { border-color:rgba(184,208,226,.42); background:linear-gradient(145deg,rgba(150,180,204,.2),rgba(45,66,86,.36)); box-shadow:0 0 15px rgba(118,161,196,.13); }
+.admin-premium .admin-client-loyalty-identity > div { min-width:0; }
+.admin-premium .admin-client-loyalty-identity > div > div:first-child { color:#f3fff8!important; font-size:16px!important; font-weight:900!important; letter-spacing:.1px; }
+.admin-premium .admin-client-loyalty-description { margin-top:5px!important; color:#c8e8d9!important; font-size:12px!important; line-height:1.45; }
+.admin-premium .admin-client-loyalty-banner.is-disabled .admin-client-loyalty-description { color:#c2d0dc!important; }
+.admin-premium .admin-client-loyalty-controls { align-items:center; gap:9px!important; flex-shrink:0; }
+.admin-premium .admin-client-loyalty-config-button { min-height:40px; padding:9px 14px!important; border:1px solid rgba(190,255,222,.62)!important; border-radius:12px!important; background:rgba(8,35,32,.46)!important; color:#effff6!important; font-size:12px!important; font-weight:900!important; box-shadow:0 0 15px rgba(67,224,146,.14),inset 0 1px 0 rgba(255,255,255,.12); }
+.admin-premium .admin-client-loyalty-config-button:hover { background:rgba(13,72,53,.74)!important; }
+.admin-premium .admin-client-loyalty-toggle { min-height:40px; padding:9px 15px!important; border:1px solid rgba(255,255,255,.34)!important; border-radius:12px!important; font-size:12px!important; font-weight:900!important; box-shadow:0 7px 18px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.28)!important; }
+.admin-premium .admin-client-loyalty-toggle.is-enabled { background:linear-gradient(135deg,#d9ffe8,#81f0b2)!important; color:#10593c!important; }
+.admin-premium .admin-client-loyalty-toggle.is-disabled { background:linear-gradient(135deg,#ffd77a,#ffad43)!important; color:#402b0d!important; }
+
+/* Diálogo de configuración: tarjetas seleccionables con texto claro. */
+.admin-premium div.admin-client-loyalty-overlay { background:rgba(2,9,16,.86)!important; backdrop-filter:blur(8px); }
+.admin-premium div.admin-client-loyalty-modal { width:min(620px,100%)!important; max-width:620px!important; max-height:92vh!important; padding:23px!important; border:1px solid rgba(118,190,219,.42)!important; border-radius:23px!important; background:radial-gradient(ellipse at 100% 0%,rgba(46,168,209,.14),transparent 45%),linear-gradient(155deg,#142d3f,#0b1826 72%)!important; color:#eef8fc!important; box-shadow:0 28px 75px rgba(0,0,0,.66),0 0 35px rgba(61,176,220,.16),inset 0 1px 0 rgba(255,255,255,.1)!important; }
+.admin-premium .admin-client-loyalty-modal > div:first-child { padding-bottom:13px; border-bottom:1px solid rgba(169,210,226,.2); }
+.admin-premium .admin-client-loyalty-modal-title { color:#f3fbff!important; font-size:20px!important; }
+.admin-premium .admin-client-loyalty-modal > div:first-child > button { width:36px; height:36px; border:1px solid rgba(174,212,228,.27)!important; border-radius:11px!important; background:rgba(255,255,255,.07)!important; color:#d8eaf2!important; }
+.admin-premium .admin-client-loyalty-modal > div:first-child > button:hover { background:rgba(255,255,255,.15)!important; }
+.admin-premium .admin-loyalty-choice { position:relative; overflow:hidden; padding:15px 16px!important; border:1px solid rgba(154,196,215,.24)!important; border-radius:17px!important; background:linear-gradient(145deg,#183449,#112638)!important; color:#edf8fd!important; box-shadow:0 8px 18px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.06); transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease!important; }
+.admin-premium .admin-loyalty-choice:hover { transform:translateY(-1px); }
+.admin-premium .admin-loyalty-choice-simple.is-active { border-color:#7eedaa!important; background:radial-gradient(ellipse at 100% 0%,rgba(77,226,141,.19),transparent 58%),linear-gradient(145deg,#174237,#102e30)!important; box-shadow:0 0 22px rgba(71,223,138,.17),inset 0 1px 0 rgba(255,255,255,.1); }
+.admin-premium .admin-loyalty-choice-progressive.is-active { border-color:#ffd278!important; background:radial-gradient(ellipse at 100% 0%,rgba(255,173,73,.19),transparent 58%),linear-gradient(145deg,#4a3927,#302b29)!important; box-shadow:0 0 22px rgba(255,174,72,.15),inset 0 1px 0 rgba(255,255,255,.1); }
+.admin-premium .admin-loyalty-choice-cashback.is-active { border-color:#75ddff!important; background:radial-gradient(ellipse at 100% 0%,rgba(64,184,255,.2),transparent 58%),linear-gradient(145deg,#1a3d5b,#142b43)!important; box-shadow:0 0 22px rgba(61,178,255,.18),inset 0 1px 0 rgba(255,255,255,.1); }
+.admin-premium .admin-loyalty-choice > div:first-child { margin-bottom:9px!important; }
+.admin-premium .admin-loyalty-choice > div:first-child > div { color:#f0f8fc!important; }
+.admin-premium .admin-loyalty-choice-description { color:#cfdee7!important; font-size:13px!important; line-height:1.55!important; }
+.admin-premium .admin-loyalty-choice-description strong { color:#fff!important; }
+.admin-premium .admin-loyalty-choice-simple > div:nth-child(3) > div { border:1px solid rgba(162,224,190,.26); background:linear-gradient(145deg,#244d43,#183a37)!important; color:#e5fff0!important; box-shadow:0 2px 7px rgba(0,0,0,.24); }
+.admin-premium .admin-loyalty-choice-simple > div:nth-child(3) > div.is-reward { border-color:#ffe286!important; background:linear-gradient(145deg,#987024,#614719)!important; color:#fff4cc!important; box-shadow:0 0 12px rgba(255,207,92,.28); }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:not(:last-child) { border:1px solid rgba(200,220,232,.18); background:linear-gradient(100deg,#214239,#18332f)!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:nth-child(2) { background:linear-gradient(100deg,#584120,#3d3126)!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:nth-child(3) { background:linear-gradient(100deg,#203f5f,#1b3049)!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:nth-child(4) { background:linear-gradient(100deg,#4b3653,#33283f)!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div > span:first-child { color:#e1edf3!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div > span:last-child { color:#ffe199!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:nth-child(3) > span:last-child { color:#a6ddff!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:nth-child(4) > span:last-child { color:#f1c3ff!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:last-child { color:#bbccd5!important; }
+.admin-premium div.admin-loyalty-cashback-example { border:1px solid rgba(98,219,255,.34)!important; background:linear-gradient(110deg,#163b54,#1b4654)!important; color:#c9f3ff!important; }
+.admin-premium div.admin-loyalty-cashback-editor { margin-top:-1px; padding:15px!important; border:1px solid rgba(112,216,255,.53)!important; border-radius:0 0 16px 16px!important; background:linear-gradient(145deg,#14344a,#10283a)!important; color:#eaf6fb!important; }
+.admin-premium .admin-loyalty-cashback-editor-title { color:#9cecff!important; font-size:12px!important; }
+.admin-premium .admin-loyalty-cashback-editor label { color:#d7e8f0!important; font-size:12px!important; }
+.admin-premium .admin-loyalty-cashback-editor input[type="number"] { border:1px solid rgba(119,207,242,.45)!important; border-radius:10px!important; background:#081c2b!important; color:#f1fbff!important; box-shadow:inset 0 1px 4px rgba(0,0,0,.24); }
+.admin-premium .admin-loyalty-cashback-editor input[type="range"] { accent-color:#61d9ff!important; }
+.admin-premium .admin-loyalty-cashback-editor span { color:#d0e0e8!important; }
+.admin-premium .admin-loyalty-cashback-editor > div > div[style*="justify-content: space-between"] span { color:#a7e9ff!important; }
+.admin-premium .admin-client-loyalty-modal > button:last-child { min-height:48px; margin-top:4px; border:1px solid #9af0bb!important; border-radius:13px!important; background:linear-gradient(110deg,#137b55,#23ad70,#58d995)!important; color:#fff!important; box-shadow:0 8px 20px rgba(33,177,112,.24),0 0 18px rgba(66,225,144,.16); }
+
+/* Indicadores con un degradado/acento diferente para cada función. */
+.admin-premium div.admin-client-stats-grid { grid-template-columns:repeat(4,minmax(0,1fr))!important; gap:11px!important; }
+.admin-premium div.admin-client-stat-card { min-height:111px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; padding:13px 9px!important; border:1px solid #6dd8ee!important; border-radius:18px!important; background:radial-gradient(ellipse at 50% 0%,rgba(64,186,244,.23),transparent 68%),linear-gradient(145deg,#173b56,#10273a)!important; box-shadow:0 9px 22px rgba(0,0,0,.23),0 0 17px rgba(57,181,229,.13),inset 0 1px 0 rgba(255,255,255,.09); }
+.admin-premium div.admin-client-stat-1 { border-color:#ffce75!important; background:radial-gradient(ellipse at 50% 0%,rgba(255,185,72,.24),transparent 68%),linear-gradient(145deg,#584125,#352b26)!important; box-shadow:0 0 17px rgba(255,178,66,.13),inset 0 1px 0 rgba(255,255,255,.08); }
+.admin-premium div.admin-client-stat-2 { border-color:#7fe3c1!important; background:radial-gradient(ellipse at 50% 0%,rgba(66,214,173,.21),transparent 68%),linear-gradient(145deg,#16473f,#122e35)!important; box-shadow:0 0 17px rgba(57,211,164,.13),inset 0 1px 0 rgba(255,255,255,.08); }
+.admin-premium div.admin-client-stat-3 { border-color:#ff899b!important; background:radial-gradient(ellipse at 50% 0%,rgba(255,74,112,.25),transparent 68%),linear-gradient(145deg,#582d40,#352438)!important; box-shadow:0 0 17px rgba(255,65,106,.15),inset 0 1px 0 rgba(255,255,255,.08); }
+.admin-premium .admin-client-stat-card > div:first-child { display:grid; place-items:center; width:34px; height:34px; border:1px solid rgba(227,247,255,.2); border-radius:11px; background:rgba(255,255,255,.08); font-size:20px!important; filter:drop-shadow(0 0 5px rgba(255,255,255,.22)); }
+.admin-premium .admin-client-stat-value { color:#e6f9ff!important; font-size:23px!important; line-height:1.1; text-shadow:0 0 14px rgba(113,220,255,.2); }
+.admin-premium .admin-client-stat-1 .admin-client-stat-value { color:#fff0c4!important; text-shadow:0 0 13px rgba(255,202,100,.2); }
+.admin-premium .admin-client-stat-2 .admin-client-stat-value { color:#c7ffea!important; text-shadow:0 0 13px rgba(99,234,183,.2); }
+.admin-premium .admin-client-stat-3 .admin-client-stat-value { color:#ffd7df!important; text-shadow:0 0 13px rgba(255,115,139,.24); }
+.admin-premium .admin-client-stat-label { color:#c2d5df!important; font-size:11px!important; font-weight:800!important; line-height:1.25; }
+
+/* Panel de bloqueados y filas: el estado se distingue sin perder el tema oscuro. */
+.admin-premium div.admin-blocked-clients-panel { padding:15px!important; border:1px solid rgba(120,204,221,.48)!important; border-radius:19px!important; background:radial-gradient(ellipse at 0% 0%,rgba(54,174,188,.16),transparent 60%),linear-gradient(145deg,#153845,#102732)!important; box-shadow:0 10px 26px rgba(0,0,0,.27),0 0 17px rgba(47,196,196,.1),inset 0 1px 0 rgba(255,255,255,.08)!important; }
+.admin-premium div.admin-blocked-clients-panel.has-blocked { border-color:rgba(255,113,132,.72)!important; background:radial-gradient(ellipse at 0% 0%,rgba(255,67,96,.24),transparent 62%),linear-gradient(145deg,#4e293a,#2d2330 78%)!important; box-shadow:0 12px 30px rgba(0,0,0,.3),0 0 23px rgba(245,64,92,.16),inset 0 1px 0 rgba(255,255,255,.09)!important; }
+.admin-premium .admin-blocked-clients-header { min-height:54px; gap:12px; padding:2px 2px 10px; border-bottom:1px solid rgba(177,213,224,.18); }
+.admin-premium .admin-blocked-clients-header > div:first-child { min-width:0; gap:12px!important; }
+.admin-premium .admin-blocked-clients-icon { display:grid; place-items:center; width:43px; height:43px; flex:0 0 43px; border:1px solid rgba(255,147,161,.6); border-radius:14px; background:linear-gradient(145deg,rgba(255,91,115,.3),rgba(145,45,69,.32)); font-size:22px!important; box-shadow:0 0 17px rgba(255,69,101,.2); }
+.admin-premium .admin-blocked-clients-title { color:#ffe9ed!important; font-size:15px!important; }
+.admin-premium .admin-blocked-clients-summary { margin-top:4px; color:#d3e1e8!important; font-size:12px!important; line-height:1.4; }
+.admin-premium div.admin-blocked-clients-panel.no-blocked .admin-blocked-clients-icon { border-color:rgba(114,231,190,.56); background:linear-gradient(145deg,rgba(70,214,166,.25),rgba(32,111,93,.3)); box-shadow:0 0 15px rgba(68,214,164,.16); }
+.admin-premium div.admin-blocked-clients-panel.no-blocked .admin-blocked-clients-title { color:#e2fff1!important; }
+.admin-premium .admin-blocked-clients-toggle { min-height:40px; padding:9px 14px!important; border:1px solid rgba(255,255,255,.3)!important; border-radius:12px!important; background:linear-gradient(135deg,#bb425a,#8e2f4b)!important; color:#fff!important; font-size:12px!important; font-weight:900!important; box-shadow:0 6px 17px rgba(0,0,0,.23),0 0 15px rgba(255,68,101,.18)!important; }
+.admin-premium .admin-blocked-clients-panel.no-blocked .admin-blocked-clients-toggle { background:linear-gradient(135deg,#178660,#20ad7a)!important; box-shadow:0 0 15px rgba(51,213,146,.15)!important; }
+.admin-premium .admin-blocked-clients-list { margin-top:12px!important; padding-top:12px; border-top:1px solid rgba(189,216,227,.16); }
+.admin-premium .admin-blocked-clients-empty { padding:19px 12px!important; color:#e2f0f5!important; font-size:13px!important; }
+.admin-premium .admin-blocked-clients-empty-copy { color:#b7ccd6!important; font-size:12px!important; line-height:1.5; }
+.admin-premium div.admin-blocked-client-row { gap:12px; padding:12px 13px!important; border:1px solid rgba(255,123,143,.42)!important; border-radius:14px!important; background:linear-gradient(105deg,rgba(114,45,62,.62),rgba(29,34,48,.92))!important; box-shadow:0 5px 14px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.05); }
+.admin-premium .admin-blocked-client-name { color:#fff1f3!important; font-size:14px!important; }
+.admin-premium .admin-blocked-client-meta { margin-top:4px!important; color:#d3c3cb!important; font-size:12px!important; }
+.admin-premium .admin-blocked-client-row button { min-height:37px; padding:8px 12px!important; border:1px solid rgba(153,255,201,.52)!important; border-radius:11px!important; background:linear-gradient(135deg,#18845d,#26b57b)!important; color:#fff!important; font-size:11px!important; font-weight:900!important; box-shadow:0 0 14px rgba(65,222,143,.17)!important; }
+.admin-premium .admin-blocked-client-row button:hover { filter:brightness(1.12); }
+
+@media(max-width:760px) {
+  .admin-premium div.admin-client-loyalty-banner { flex-wrap:wrap; }
+  .admin-premium .admin-client-loyalty-controls { width:100%; justify-content:flex-end; }
+  .admin-premium div.admin-client-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+}
+@media(max-width:480px) {
+  .admin-premium div.admin-client-broadcast-card { padding:15px!important; }
+  .admin-premium div.admin-client-loyalty-banner { align-items:flex-start!important; padding:14px!important; }
+  .admin-premium .admin-client-loyalty-controls { justify-content:stretch; }
+  .admin-premium .admin-client-loyalty-controls button { flex:1; }
+  .admin-premium div.admin-client-loyalty-modal { padding:16px!important; border-radius:18px!important; }
+  .admin-premium .admin-loyalty-choice { padding:13px!important; }
+  .admin-premium div.admin-blocked-clients-panel { padding:12px!important; }
+  .admin-premium .admin-blocked-clients-header { align-items:flex-start!important; }
+  .admin-premium .admin-blocked-clients-header > button { flex-shrink:0; }
+  .admin-premium div.admin-blocked-client-row { align-items:flex-start!important; flex-wrap:wrap; }
+  .admin-premium .admin-blocked-client-row button { width:100%; margin:0!important; }
+}
+
+/* Selectores de estructura para elementos cuyo texto sigue marcado inline. */
+.admin-premium .admin-client-loyalty-banner > div:first-child { min-width:0; gap:12px!important; }
+.admin-premium .admin-client-loyalty-banner > div:first-child > div { min-width:0; }
+.admin-premium .admin-client-loyalty-banner > div:first-child > div > div:first-child { color:#f3fff8!important; font-size:16px!important; font-weight:900!important; letter-spacing:.1px; }
+.admin-premium .admin-client-loyalty-banner > div:first-child > div > div:last-child { margin-top:5px!important; color:#c8e8d9!important; font-size:12px!important; line-height:1.45; }
+.admin-premium .admin-client-loyalty-banner.is-disabled > div:first-child > div > div:last-child { color:#c2d0dc!important; }
+.admin-premium .admin-client-loyalty-banner > div:last-child { align-items:center; gap:9px!important; flex-shrink:0; }
+.admin-premium .admin-client-loyalty-banner > div:last-child > button:first-child { min-height:40px; padding:9px 14px!important; border:1px solid rgba(190,255,222,.62)!important; border-radius:12px!important; background:rgba(8,35,32,.46)!important; color:#effff6!important; font-size:12px!important; font-weight:900!important; box-shadow:0 0 15px rgba(67,224,146,.14),inset 0 1px 0 rgba(255,255,255,.12); }
+.admin-premium .admin-client-loyalty-banner > div:last-child > button:last-child { min-height:40px; padding:9px 15px!important; border:1px solid rgba(255,255,255,.34)!important; border-radius:12px!important; font-size:12px!important; font-weight:900!important; box-shadow:0 7px 18px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.28)!important; }
+.admin-premium .admin-client-loyalty-banner.is-enabled > div:last-child > button:last-child { background:linear-gradient(135deg,#d9ffe8,#81f0b2)!important; color:#10593c!important; }
+.admin-premium .admin-client-loyalty-banner.is-disabled > div:last-child > button:last-child { background:linear-gradient(135deg,#ffd77a,#ffad43)!important; color:#402b0d!important; }
+.admin-premium .admin-client-loyalty-modal > div:first-child > div:first-child { color:#f3fbff!important; font-size:20px!important; }
+.admin-premium .admin-loyalty-choice > div:first-child > div:first-child { color:#f0f8fc!important; font-size:15px!important; font-weight:900!important; }
+.admin-premium .admin-loyalty-choice > div:first-child > span { padding:4px 10px!important; border:1px solid rgba(255,255,255,.25); border-radius:999px!important; box-shadow:0 0 13px rgba(255,255,255,.13); font-size:11px!important; }
+.admin-premium .admin-loyalty-choice > div:nth-child(2) { color:#cfdee7!important; font-size:13px!important; line-height:1.55!important; }
+.admin-premium .admin-loyalty-choice > div:nth-child(2) strong { color:#fff!important; }
+.admin-premium .admin-loyalty-choice-simple > div:nth-child(3) > div { border:1px solid rgba(162,224,190,.26); background:linear-gradient(145deg,#244d43,#183a37)!important; color:#e5fff0!important; box-shadow:0 2px 7px rgba(0,0,0,.24); }
+.admin-premium .admin-loyalty-choice-simple > div:nth-child(3) > div:last-child { border-color:#ffe286!important; background:linear-gradient(145deg,#987024,#614719)!important; color:#fff4cc!important; box-shadow:0 0 12px rgba(255,207,92,.28); }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:not(:last-child) { border:1px solid rgba(200,220,232,.18); background:linear-gradient(100deg,#214239,#18332f)!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:nth-child(2) { background:linear-gradient(100deg,#584120,#3d3126)!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:nth-child(3) { background:linear-gradient(100deg,#203f5f,#1b3049)!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:nth-child(4) { background:linear-gradient(100deg,#4b3653,#33283f)!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:not(:last-child) > span:first-child { color:#e1edf3!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:not(:last-child) > span:last-child { color:#ffe199!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:nth-child(3) > span:last-child { color:#a6ddff!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:nth-child(4) > span:last-child { color:#f1c3ff!important; }
+.admin-premium .admin-loyalty-choice-progressive > div:nth-child(3) > div:last-child { color:#bbccd5!important; }
+.admin-premium .admin-loyalty-choice-cashback > div:nth-child(3) { border:1px solid rgba(98,219,255,.34); border-radius:10px!important; background:linear-gradient(110deg,#163b54,#1b4654)!important; color:#c9f3ff!important; }
+.admin-premium .admin-loyalty-choice-cashback + div { margin-top:-1px; padding:15px!important; border:1px solid rgba(112,216,255,.53)!important; border-radius:0 0 16px 16px!important; background:linear-gradient(145deg,#14344a,#10283a)!important; color:#eaf6fb!important; }
+.admin-premium .admin-loyalty-choice-cashback + div > div:first-child { color:#9cecff!important; font-size:12px!important; }
+.admin-premium .admin-loyalty-choice-cashback + div label { color:#d7e8f0!important; font-size:12px!important; }
+.admin-premium .admin-loyalty-choice-cashback + div input[type="number"] { border:1px solid rgba(119,207,242,.45)!important; border-radius:10px!important; background:#081c2b!important; color:#f1fbff!important; box-shadow:inset 0 1px 4px rgba(0,0,0,.24); }
+.admin-premium .admin-loyalty-choice-cashback + div input[type="range"] { accent-color:#61d9ff!important; }
+.admin-premium .admin-loyalty-choice-cashback + div span { color:#d0e0e8!important; }
+.admin-premium .admin-client-stat-card > div:nth-child(2) { color:#e6f9ff!important; font-size:23px!important; line-height:1.1; text-shadow:0 0 14px rgba(113,220,255,.2); }
+.admin-premium .admin-client-stat-1 > div:nth-child(2) { color:#fff0c4!important; text-shadow:0 0 13px rgba(255,202,100,.2); }
+.admin-premium .admin-client-stat-2 > div:nth-child(2) { color:#c7ffea!important; text-shadow:0 0 13px rgba(99,234,183,.2); }
+.admin-premium .admin-client-stat-3 > div:nth-child(2) { color:#ffd7df!important; text-shadow:0 0 13px rgba(255,115,139,.24); }
+.admin-premium .admin-client-stat-card > div:nth-child(3) { color:#c2d5df!important; font-size:11px!important; font-weight:800!important; line-height:1.25; }
+.admin-premium .admin-blocked-clients-panel > div:first-child { min-height:54px; gap:12px; padding:2px 2px 10px; border-bottom:1px solid rgba(177,213,224,.18); }
+.admin-premium .admin-blocked-clients-panel > div:first-child > div:first-child { min-width:0; gap:12px!important; }
+.admin-premium .admin-blocked-clients-panel > div:first-child > div:first-child > span { display:grid; place-items:center; width:43px; height:43px; flex:0 0 43px; border:1px solid rgba(255,147,161,.6); border-radius:14px; background:linear-gradient(145deg,rgba(255,91,115,.3),rgba(145,45,69,.32)); font-size:22px!important; box-shadow:0 0 17px rgba(255,69,101,.2); }
+.admin-premium .admin-blocked-clients-panel.no-blocked > div:first-child > div:first-child > span { border-color:rgba(114,231,190,.56); background:linear-gradient(145deg,rgba(70,214,166,.25),rgba(32,111,93,.3)); box-shadow:0 0 15px rgba(68,214,164,.16); }
+.admin-premium .admin-blocked-clients-panel > div:first-child > div:first-child > div > div:first-child { color:#ffe9ed!important; font-size:15px!important; }
+.admin-premium .admin-blocked-clients-panel.no-blocked > div:first-child > div:first-child > div > div:first-child { color:#e2fff1!important; }
+.admin-premium .admin-blocked-clients-panel > div:first-child > div:first-child > div > div:last-child { margin-top:4px; color:#d3e1e8!important; font-size:12px!important; line-height:1.4; }
+.admin-premium .admin-blocked-clients-panel > div:first-child > button { min-height:40px; padding:9px 14px!important; border:1px solid rgba(255,255,255,.3)!important; border-radius:12px!important; background:linear-gradient(135deg,#bb425a,#8e2f4b)!important; color:#fff!important; font-size:12px!important; font-weight:900!important; box-shadow:0 6px 17px rgba(0,0,0,.23),0 0 15px rgba(255,68,101,.18)!important; }
+.admin-premium .admin-blocked-clients-panel.no-blocked > div:first-child > button { background:linear-gradient(135deg,#178660,#20ad7a)!important; box-shadow:0 0 15px rgba(51,213,146,.15)!important; }
+.admin-premium .admin-blocked-clients-panel > div:nth-child(2) { margin-top:12px!important; padding-top:12px; border-top:1px solid rgba(189,216,227,.16); }
+.admin-premium .admin-blocked-clients-panel > div:nth-child(2) > div:first-child:not(.admin-blocked-client-row) { padding:19px 12px!important; color:#e2f0f5!important; font-size:13px!important; }
+.admin-premium .admin-blocked-clients-panel > div:nth-child(2) > div:first-child:not(.admin-blocked-client-row) > div { color:#b7ccd6!important; font-size:12px!important; }
+.admin-premium .admin-blocked-client-row > div:first-child > div:first-child { color:#fff1f3!important; font-size:14px!important; }
+.admin-premium .admin-blocked-client-row > div:first-child > div:last-child { margin-top:4px!important; color:#d3c3cb!important; font-size:12px!important; }
+.admin-premium .admin-blocked-client-row > button { min-height:37px; padding:8px 12px!important; border:1px solid rgba(153,255,201,.52)!important; border-radius:11px!important; background:linear-gradient(135deg,#18845d,#26b57b)!important; color:#fff!important; font-size:11px!important; font-weight:900!important; box-shadow:0 0 14px rgba(65,222,143,.17)!important; }
+.admin-premium .admin-blocked-client-row > button:hover { filter:brightness(1.12); }
+
+@media(max-width:760px) {
+  .admin-premium .admin-client-loyalty-banner > div:last-child { width:100%; justify-content:flex-end; }
+  .admin-premium div.admin-client-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; }
+}
+@media(max-width:480px) {
+  .admin-premium div.admin-client-loyalty-banner { align-items:flex-start!important; padding:14px!important; }
+  .admin-premium .admin-client-loyalty-banner > div:last-child { justify-content:stretch; }
+  .admin-premium .admin-client-loyalty-banner > div:last-child > button { flex:1; }
+  .admin-premium div.admin-client-loyalty-modal { padding:16px!important; border-radius:18px!important; }
+  .admin-premium .admin-loyalty-choice { padding:13px!important; }
+  .admin-premium div.admin-blocked-clients-panel { padding:12px!important; }
+  .admin-premium .admin-blocked-clients-panel > div:first-child { align-items:flex-start!important; }
+  .admin-premium .admin-blocked-clients-panel > div:first-child > button { flex-shrink:0; }
+  .admin-premium div.admin-blocked-client-row { align-items:flex-start!important; flex-wrap:wrap; }
+  .admin-premium .admin-blocked-client-row > button { width:100%; margin:0!important; }
+}
