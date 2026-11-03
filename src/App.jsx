@@ -661,6 +661,16 @@ function App() {
       // para evitar que Firebase devuelva el valor viejo y pise los cambios del admin
       if (key !== "products" && localSaveTimestamps[key] && Date.now() - localSaveTimestamps[key] < 4000) return;
       setter(prev => {
+        // No permitir que un documento remoto vacío borre una copia local recuperable.
+        // La restauración al servidor debe ser una acción explícita del administrador.
+        if (
+          key === "customers" &&
+          newVal && typeof newVal === "object" && Object.keys(newVal).length === 0 &&
+          prev && typeof prev === "object" && Object.keys(prev).length > 0
+        ) {
+          console.warn("Firebase devolvió customers vacío; se conserva la copia local.");
+          return prev;
+        }
         if (JSON.stringify(prev) === JSON.stringify(newVal)) return prev;
         // Para orders: nunca quitar pedidos que existen localmente pero no llegaron aún a Firebase
         if (key === "orders" && Array.isArray(prev) && Array.isArray(newVal)) {
